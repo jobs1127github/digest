@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:ehcache="http://www.springmodules.org/schema/ehcache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+	<!-- 声明式事务配置 ：
+	 * 1、配置事务管理器； 这里配置了一个hibernate的事务管理器
+	 * 2、事务的传播特性；参考transaction-hibernate.xml
+	 * 3、那些类那些方法使用事务。
+	 
+	 声明式事务配置：1、基于xml配置的，2、基于注解的，一般使用注解的方便些。这里是使用xml配置的。
+	 -->
+	 
+	<!--配置事务的传播特性；
+		REQUIRED：支持当前事务，如果当前没有事务，就新建一个事务。这是最常见的选择。 
+		SUPPORTS：支持当前事务，如果当前没有事务，就以非事务方式执行。 
+		MANDATORY：支持当前事务，如果当前没有事务，就抛出异常。 
+		REQUIRES_NEW：新建事务，如果当前存在事务，把当前事务挂起。 
+		NOT_SUPPORTED：以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。 
+		NEVER：以非事务方式执行，如果当前存在事务，则抛出异常。 
+		NESTED：支持当前事务，如果当前事务存在，则执行一个嵌套事务，如果当前没有事务，就新建一个事务。
+		-->
+	<tx:advice id="txAdvice" transaction-manager="hibernateTransactionManager">
+	   <tx:attributes>
+			<tx:method name="create*" propagation="REQUIRED"/>
+			<tx:method name="save*" propagation="REQUIRED" />
+			<!-- <tx:method name="savaMarkVo_test" propagation="REQUIRED" /> -->
+			<tx:method name="delete*" propagation="REQUIRED" />
+			<tx:method name="update*" propagation="REQUIRED"/>
+			<tx:method name="build*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="do*" propagation="REQUIRED" read-only="false" />
+			<tx:method name="invoke" propagation="REQUIRED" read-only="false" />
+			
+			<tx:method name="query*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="*" propagation="SUPPORTS" read-only="true" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 哪些类的哪些方法参与事务 
+	<aop:config>
+		<aop:advisor
+			pointcut="execution(* com.tentinet.app.service.impl.*.*(..))"
+			advice-ref="txAdvice" order="1" />
+	</aop:config>
+	-->
+	<aop:config>  
+	    <aop:pointcut id="bussinessService"  
+	        expression="execution(* com.tentinet.app.service.*.*(..))" />  
+	    <aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice" />  
+	</aop:config>  
+	
+	</beans>

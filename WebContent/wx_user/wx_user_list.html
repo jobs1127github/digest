@@ -1,0 +1,211 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>用户资料查询</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta http-equiv="description" content="This is my page">
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script src="../js/global.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+<script type="text/javascript" src="../javascript/validata.js"></script>
+<script type="text/javascript" src="../javascript/loadSelect.js"></script>
+<base target="_self">
+
+</head>
+<script>
+	var group = getQueryGroup();
+	$(function() {
+		$("#waiting").hide();
+	});
+	function queryEmplInfoBy() {
+		var params = $("#emplForm").serialize();
+		onloadEmplInfo(1, params);
+	}
+	function onloadEmplInfo(pageNo, params) {
+		var url = pageContextPath + "/WXuser/getUserInfos.do";
+		sendRequest(
+				url,
+				"pageSize=15&pageNo=" + pageNo + "&" + params,
+				function(datas) {
+					var vJson = datas;
+					$("#table2").html("");
+					var table2th = "";
+					table2th += "\<tr id='headtr'\>";
+
+					if (vJson.data == null) {
+						$("#table2").html(
+								"\<th style='width:826px;'\>没有与之相关的用户\</th\>");
+
+					} else {
+						//序号、微信号、昵称、性别、地区、年龄、金币余额、注册时间、权限（医生姓名、未认证）、操作（查看详情）
+						table2th += "\<th style='width:20px;' class='td_emplName'\>序号\</th\>";
+						// table2th+="\<th style='width:50px;' class='td_emplName'\>微信号\</th\>";
+						table2th += "\<th style='width:60px;' class='td_emplName'\>昵称\</th\>";
+						table2th += "\<th style='width:30px;' class='td_emplSex'\>性别\</th\>";
+						table2th += "\<th style='width:30px;' class='td_emplSex'\>年纪\</th\>";
+						table2th += "\<th style='width:150px;' class='td_emplSex'\>地区\</th\>";
+						table2th += "\<th style='width:84px;'   class='td_emplMail'\>金币余额\</th\>";
+						table2th += "\<th style='width:84px;'   class='td_emplMail'\>注册时间\</th\>";
+						//   table2th+="\<th style='width:84px;'   class='td_emplMail'\>群组\</th\>";
+						table2th += "\<th style='width:137px;' class='td_operate'\>操作\</th\>";
+						table2th += "\</tr\>";
+						var row = "";
+						if (vJson.data.length > 0) {
+							for ( var i = 0; i < vJson.data.length; i++) {
+								var xuhao = (pageNo - 1) * 15 + 1 + i;
+								var group_id = "group_id" + i;
+								if (i % 2 == 0) {
+									row += "<tr>";
+								} else {
+									row += "<tr style='background-color:#f4f8f9'>";
+								}
+								row += "<td>" + xuhao + "</td>";
+								row += "<td>" + vJson.data[i].username
+										+ "</td>";
+								row += "<td>" + getSexName(vJson.data[i].sex);
+								+"</td>";
+								row += "<td>" + vJson.data[i].age + "</td>";
+								row += "<td>" + vJson.data[i].country
+										+ vJson.data[i].province
+										+ vJson.data[i].city + "</td>";
+								row += "<td>" + vJson.data[i].gold.toFixed(2)
+										+ "</td>";
+								row += "<td>" + vJson.data[i].created_time
+										+ "</td>";
+								row += "<td> <a href='#'  style='margin-right:3px;width=4%'  class='cz' onclick='openwin(this)' openid="
+										+ vJson.data[i].openid
+										+ " role="
+										+ vJson.data[i].role + ">详细</a>";
+
+								row += "</td>";
+								row += "</tr>";
+
+							}
+						}
+						var footPage = "";
+						footPage += "\<tr align='right'\>";
+						footPage += "\<td class='pages' style='align:right;border-top:1px solid #bdd0db;' colspan='14'\>";
+						footPage += "\<div id='pagediv' class='fy'\>\</div\>";
+						footPage += "\</td\>";
+						footPage += "\</tr\>";
+						$("#table2").html(table2th + row + footPage);
+
+					}
+					$("#pagediv").children().remove();
+					var pageV = new pageView("#pagediv");
+					pageV.totalCount = vJson.total;
+					pageV.index = pageNo;
+					pageV.onclick = function(index) {
+						onloadEmplInfo(index, params);
+					};
+					pageV.render();
+				}, true);
+	}
+
+	function chongZi() {
+		emplForm.reset();
+		window.location.href = "wx_user_list.html";
+	}
+
+	function openwin(_this) {
+		var openid = $(_this).attr("openid");
+		var role = $(_this).attr("role");
+		var winPar = window
+				.open("wx_user_show.html?openid=" + openid + "&role=" + role,
+						"newwindow",
+						"center:yes;resizable=no;status=no;dialogheight=200px;dialogwidth=200px;");
+		if (winPar == "refresh") {
+			window.location.reload();
+		}
+	}
+
+	function updateGroup(_this, id) {
+		var group_id = $("#group_id" + id).val();
+		var openid = $(_this).attr("openid");
+		sendRequest(pageContextPath + "/WXuser/updateEmplGroup.do", {
+			"group_id" : group_id,
+			"openid" : openid
+		}, function(datas) {
+			var vJson = datas;
+			if (datas) {
+				alert("操作成功");
+				window.location.href = "wx_user_list.html";
+			}
+		});
+	}
+	function downLoad() {
+		$("#waiting").show();
+		var url = pageContextPath + "/WXuser/downLoadUserInfos.do";
+			sendRequest(
+				url,
+				null,
+				function(datas) {
+					var myurl = pageContextPath+datas.data;
+					window.location.href = myurl;
+					$("#waiting").hide();
+				},false);
+	}
+</script>
+<body onload="queryEmplInfoBy()">
+	 	<div id="waiting" align="center">
+		<div class="weui_mask"> </div>
+			<img style="width:50%;" src="../img/load3.gif"></img>
+			<b style="font-size:21px;color:red;">正在下载中，请稍等……</b>
+		</div>
+	<form method="post" name="emplForm" id="emplForm">
+		<div id="hiddenDiv"></div>
+		<div class="container">
+			<div class="detail">
+				<b></b><span>用户管理</span>
+			</div>
+			<div id="content">
+				<fieldset>
+					<div>
+						<table id="table1" style="width:100%;">
+							<tr>
+								<td>昵称</td>
+								<td><input type="text" name="username" id="username"
+									class="inp" />
+								</td>
+								<!--  <td><input id="role" name="role" value="1" type="hidden"/></td>    -->
+								<td>是否关注</td>
+								<td><select id="status" name="status" class="select"
+									style="width:153px;">
+										<option value="0">全部</option>
+										<option value="Y">关注</option>
+										<option value="N">未关注</option>
+								</select>
+								</td>
+							</tr>
+							<tr>
+
+							</tr>
+						</table>
+
+						<div class="btncon">
+							<a href="#" onclick="queryEmplInfoBy()"><div class="btns">查询</div>
+							</a><a href="#" onclick="downLoad()"><div class="btns">下载全部</div>
+							</a>
+						</div>
+					</div>
+
+				</fieldset>
+			</div>
+		</div>
+		<div>
+			<table id="table2"
+				style="width:100%;word-break:break-all; word-wrap:break-word;">
+			</table>
+		</div>
+	</form>
+</body>
+</html>

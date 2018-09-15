@@ -1,0 +1,223 @@
+ssh框架工作原理：
+client--请求-->app server（比如tomcat）--分发--->struts2（doFilter()）----->action
+
+action---->service---->DAO---->DB
+
+DAO--->DB 由Hibernate完成
+
+大概的请求过程：
+请求--->中间件（tomcat、jboss、Apache）服务器--->分发到指定的Controller控制器（前台框架）--->
+业务接口（service层）--->DAO--->DB--->获得数据包装数据--->页面展示
+
+Spring贯穿整个过程，把service注入给action，把DAO注入给service，并管理事务，以及提供AOP编程
+
+和前台页面建立关系：
+1、JSF2.0集成了ajax，不用自己写ajax代码 控制层@ManagedBean(name = "nssCommercials")，可以把整个控制层类放在某个范围里，
+如：@SessionScoped，使得这类里的成员变量都被放置在了session里不用自己去关心session的存储值
+<h:commandButton value="经理上传Excel导入盘库库存↑" action="#{nssCommercials.fileUploadPrepreToMarketPlanning}" styleClass="button white medium" rendered="false">
+  <f:ajax render="batchTopankukucun:upload_filepankukucn msg_all" onevent="showFileUploads_pankukun"/>
+</h:commandButton>
+
+2、Struts2控制层是action，一般情况extends ActionSupport，
+通过配置文件规划好请求，请求中指定了调用的action和方法，默认调用execute()方法
+
+3、SpringMVC 的@Controller通过@RequestMapping来和前台页面互通，在RequestMapping里指定了要调用的方法
+
+
+一、
+Struts2或SpringMVC、JSF2.0等作为Web层框架，大体功能作用：
+1、获取表单内容，实现参数的传递和接收
+2、把不同的请求交由合适的Controller控制器来处理
+3、在控制器中调用业务接口，实现分层解耦
+4、将业务接口返回的结果包装起来发送到指定页面视图，并在页面视图展现
+5、做一些简单数据验证或国际化等工作
+
+二、
+Hibernate、ibaties（myBaties的前身）、myBaties、jdo、ejb entiy bean等持久层框架，大体功能作用：
+都是与数据库打交道的框架，封装了底层的JDBC等操作，大大简化了使用JDBC操作数据库的复杂性和冗余性
+
+Hibernate的核心接口一共有5个，
+分别为:Session、SessionFactory、Transaction、Query和Configuration。
+Configuration类的实例首先定位映射文档位置、读取配置，然后创建SessionFactory对象;
+SessionFactroy接口负责初始化Hibernate，并创建session对象
+Session接口负责执行被持久化对象的CRUD操作(CRUD的任务是完成与数据库的交流，包含了很多常见的SQL语句)
+Transaction进行事务管理
+Query数据库数据查询
+
+SessionFactory.openSession()永远打开新的session，而SessionFactory.getCurrentSession()则是拿到当前的session，当前没有才创建新的session
+
+Hibernate是一个对象关系映射框架，可以把java bean和数据库表关联起来，封装了底层的JDBC等操作，可以轻松的面向对象
+操作数据库，主要通过HibernateTemplate对象进行增删改查等操作
+
+Hibernate对象的三种状态：
+Student t = new Student();
+t.setName('haha');
+t.setAge(18);
+在session 持久化t之前，t对象处于Transient（游离状态），此时没有id
+SessionFactory sessionFactory = new AnnotationConfiguration().configure().buildSessionFactory();
+Session session = SessionFactory.getCurrentSession();
+session.beginTransaction();
+session.save(t);
+在commit()之前，t对象已经保存到数据库，有了id，但是session仍然保留或缓存了t对象的引用，此时t为Persistent（持久状态）,有id且id在session缓存里
+session.getTransaction().commit();
+sesson.close();
+在session commit()后或close()后，已经清除了t对象的缓存，故t为Detached（脱管状态）,有id，session里没有缓存，即t脱离了session的管理
+
+Hibernate缓存：
+缓存：在内存里开辟一片空间，存放数据库里的数据，方便快捷的访问
+Hibernate一级缓存（session级别缓存，只在自己的范围可用）：session的一级缓存，为session自己的缓存，每一个session都有自己的缓存
+Hibernate二级缓存（sessionFactory级别缓存，所有的session可以共用），比如EhCache，要使用二级缓存必须先打开二级缓存，然后指定使用什么二级缓存
+Hibernate配置文件里配置：<property name="cache.use_second_level_cache">true</property> <property name="cache.provider_class">org.hibernate.cache.EhCacheProvider</property>
+二级缓存：经常访问，数据不大，改动不大的对象最适合放在二级缓存（比如权限判断、组织结构）
+还需要把二级缓存的配置文件放在classpath下（ehcache.xml），项目中加入ehcache.jar
+在类用@Cache注解标识该类是否使用二级缓存
+@Cache(usage=CacheConcurrencyStrategy.READ_WRITE)//usage指定使用默认的缓存策略,也可以通过region来指定这个类使用哪个缓存策略，在cache.xml里配置即可
+public class Student { 
+}
+
+以下方法默认会使用二级缓存：
+load()/iterate();
+list默认往二级缓存放数据，查询的时候不使用
+
+查询缓存：查询条件重复，可以使用查询缓存，提供效率 ，查询缓存是依赖于二级缓存的，所以是在二级缓存的基础之上使用
+配置文件增加配置：<property name="cache.use_query_cache">true</property>
+Student t = new Student();
+t.setName('haha');
+t.setAge(18);
+SessionFactory sessionFactory = new AnnotationConfiguration().configure().buildSessionFactory();
+Session session = SessionFactory.getCurrentSession();
+session.beginTransaction();
+List<Student> list = (List<Student>)session.createQuery(" from Student").list();//这句话会把查询结果存放到二级缓存，但是不会使用二级缓存
+List<Student> list = (List<Student>)session.createQuery(" from Student").setCacheable(true).list();//这句话会把查询结果存放到二级缓存，并使用二级缓存
+session.getTransaction().commit();
+sesson.close();
+
+
+事务的并发处理：
+事务：要么都完成，要么都不完成
+事务的特性：ACID
+A：原子性，C：一致性，I：独立性，D：持久性
+
+事务并发时可能会出现的问题：
+1、脏读（读取到了其他事务未处理完成的数据），如：如：两个事务同时操作，一个取，一个存，存了部分数据，但未提交，而取的动作却拿到了存的数据，造成脏读
+2、不可重复读（前后读取数据不一致），如：如：两个事务同时操作，一个取，一个存，存了并提交，取动作读取到两个不同的数据（1、第一类丢失更新（lost update），如：两个事务同时操作，一个取，一个存，存先提交完成，取后完成，存的动作，取不知道，仍访问旧的的数据，导致数据丢失）
+
+数据库的事务隔离机制：(越往下，级别越高，越安全，同时效率越低)
+1、read-uncommitted 允许读未提交的数据
+2、read-committed 读已经提交的数据
+4、repeatable-read 可重复读（某个具体的事务在执行时，加锁执行，防止其他事务影响）
+8、serial 解决一系列问题，每个事务挨着排一个一个的执行
+
+设定Hibernate的事务隔离级别：
+hibernate.connection.isolation = 2;
+
+Hibernate的悲观锁
+SessionFactory sessionFactory = new AnnotationConfiguration().configure().buildSessionFactory();
+Session session = SessionFactory.getCurrentSession();
+session.beginTransaction();
+Account a = (Account)session.load(Account.class,1)//不加锁，可能其他事务会影响他
+Account a = (Account)session.load(Account.class,1,lockMode.UPGRADE)//加锁，保证其他事务不能影响他
+int b = a.balance-100;
+a.setBanlance(b);
+session.getTransaction().commit();
+sesson.close();
+具体在项目里，也可以运用这种悲观锁的思想，某个人在准备更新某条数据时，系统页面加把锁，防止其他人进入修改
+
+Hibernate的乐观锁
+不需要加锁，如下：
+public class Student {
+	private int id;
+	private String name;
+	private int age;
+	@version  
+	private int version;//version的管理，数据库负责（更新版本、检查版本等）
+}
+在属性上加上@version注解，在执行持久化操作时，每个事务都会对其进行版本的更新，如发现版本不一致则报错，乐观锁就是
+很乐观的处理事务，乐观的认为某段时间内没有其他事务来影响，版本没动则更新，版本动了，则报错，重新处理。
+
+
+Mysql的数据库的隔离机制，默认是 REPEATABLE-READ，可通过查询语句：select @@tx_isolation;查询
+如果要修改set tx_isolation='read-committed';如果在效率要求没那么严的情况，直接使用数据库的REPEATABLE-READ默认的隔离机制即可，Hibernate不用管
+
+
+
+
+三、
+JPA（java persistence api）可以用Hibernate、myBites、jdo等持久化层实现
+主要通过EntityManager对象来完成增删改查等操作
+
+
+Spring框架，大体功能作用：
+1、spring充当了容器管理者的角色，实现分层解耦
+2、spring负责事务管理
+3、提供了依赖注入功能 
+
+Spring的2个核心东西 
+1、IOC控制反转或者DI依赖注入（1、实例化具体的bean、2、动态装配）
+2、AOP切面编程（安全检查、事务管理、权限管理等）filter/interceptor都是典型的AOP编程
+
+
+常用session的情况和场景：
+    1、JSF2.0里和前台页面打交道的Controller层里的ManagedBean，可以通过@SessionScope标识整个bean在session范围，该bean里的所有成员变量都自动存放在session里
+    2、在Hibernate里使用的session、sessionFactory接口等，Session接口负责执行被持久化对象的CRUD操作
+   
+Session简单介绍：参考：http://www.cnblogs.com/xdp-gacl/p/3855702.html
+在web开发中，当一个请求请求服务器时，服务器会为这个请求用户浏览器创建一个会话对象（session对象），
+服务器程序可以把用户数据保存到session对象中，当用户用该未关闭的浏览器访问其他程序时，可以从session对象里拿出数据，提供给用户使用。
+session对象是用户全局变量，在整个会话期有效，直到浏览器关闭（或用户一直未活动，导致session对象过期（一般为30分钟），或手动调用invalidate()方法强制使session失效）
+    
+request 指在一次请求的全过程中有效，即从http请求到服务器处理结束，返回响应的整个过程，
+存放在HttpServletRequest对象中。在这个过程中可以使用forward方式跳转多个jsp。在这些页面里你都可以使用这个变量    
+ 
+Session对象由服务器创建，将信息保存在服务器上，而Cookie对象由用户创建，保存在客户端上，调用request对象的getSession方法得到session对象
+Session比Cookie更安全，Session比Cookie更占资源   
+
+Session的属性设置 
+设置属性:public void setAttribute(String name,Object value)
+取得属性:public Object getAttribute(String name)
+删除属性:pbulic void removeAttribute(String name)
+    
+服务器创建session出来后，会把session的id号，以cookie的形式回写给客户机，这样，只要客户机的浏览器不关，
+再去访问服务器时，都会带着session的id号过去，服务器发现客户机浏览器带session id过来了，就会使用内存中与之对应的session为之服务。    
+
+浏览器禁用Cookie后的session处理:
+解决方案：URL重写
+response.encodeRedirectURL(java.lang.String url) 用于对sendRedirect方法后的url地址进行重写。
+response.encodeURL(java.lang.String url)用于对表单action和超链接的url地址进行重写 
+参考程序：cn.jobs1127.servlet.session
+    
+当浏览器禁用了cookie后，就可以用URL重写这种解决方案解决Session数据共享问题。
+而且response.encodeRedirectURL(java.lang.String url) 
+和response.encodeURL(java.lang.String url)是两个非常智能的方法，当检测到浏览器没有禁用cookie时，那么就不进行URL重写了。    
+    
+在程序中第一次调用request.getSession()方法时就会创建一个新的Session，可以用isNew()方法来判断Session是不是新创建的
+session对象的销毁时机:
+session对象默认30分钟没有使用，则服务器会自动销毁session，在web.xml文件中可以手工配置session的失效时间   
+当需要在程序中手动设置Session失效时，可以手工调用session.invalidate方法，摧毁session。   
+    
+Servlet生命周期分为三个阶段：
+
+　　1，初始化阶段  调用init()方法，Servlet被装载后，Servlet容器创建一个Servlet实例并且调用Servlet的init()方法进行初始化。在Servlet的整个生命周期内，init()方法只被调用一次。
+
+　　2，响应客户请求阶段　　调用service()方法，在service()方法里调用doGet()/doPost()方法；对于用户到达Servlet的请求，Servlet容器会创建特定于这个请求的ServletRequest对象和ServletResponse对象，然后调用Servlet的service方法。service方法从ServletRequest对象获得客户请求信息，处理该请求，并通过ServletResponse对象向客户返回响应信息。
+
+　　3，终止阶段　　调用destroy()方法 在destroy()方法中可以释放掉Servlet所占用的资源。
+  
+抽象类的作用：  不常用，一般使用interface接口
+在面向对象方法中，抽象类主要用来进行类型隐藏。
+构造出一组行为的抽象描述，但是这组行为却能够有任意个可能的具体实现方式。
+通过继承它实现多态，后期绑定，可以为将来要实现的东西做好接口，实现重用性。
+
+
+
+
+
+
+
+
+
+
+
+
+
+

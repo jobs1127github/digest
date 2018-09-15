@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>金币发放记录</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="This is my page">
+<link href="../../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../../javascript/httpService.js"></script>
+<script type="text/javascript" src="../../javascript/page.js"></script>
+<script src="../../js/global.js"></script>
+<script type="text/javascript" src="../../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../../javascript/calendar.js"></script>
+<script type="text/javascript" src="../../javascript/window.js"></script>
+<script type="text/javascript" src="../../javascript/validata.js"></script>
+<script type="text/javascript" src="../../javascript/loadSelect.js"></script>
+<base target="_self">
+
+</head>
+<script>
+	$(function() {
+		queryEmplInfoBy();
+	});
+	function queryEmplInfoBy() {
+		var params = $("#emplForm").serialize();
+		onloadEmplInfo(1, params);
+	}
+	function onloadEmplInfo(pageNo, params) {
+		var url = pageContextPath + "/Report/getGoldSendInfo.do";
+		sendRequest(
+				url,
+				"pageSize=15&pageNo=" + pageNo + "&" + params,
+				function(datas) {
+					var vJson = datas;
+					$("#table2").html("");
+					var table2th = "";
+					table2th += "\<tr id='headtr'\>";
+					if (vJson.data == null) {
+						$("#table2").html(
+								"\<th style='width:826px;'\>没有与之相关的记录\</th\>");
+					} else {
+						table2th += "\<th style='width:20px;' class='td_emplName'\>序号\</th\>";
+						table2th += "\<th style='width:50px;' class='td_emplName'\>领取者\</th\>";
+						table2th += "\<th style='width:60px;' class='td_emplName'\>发放金额\</th\>";
+						table2th += "\<th style='width:137px;' class='td_operate'\>发放类型\</th\>";
+						table2th += "\<th style='width:137px;' class='td_operate'\>发放时间\</th\>";
+						table2th += "\</tr\>";
+						var row = "";
+						if (vJson.data.length > 0) {
+							for ( var i = 0; i < vJson.data.length; i++) {
+								var xuhao = (pageNo - 1) * 15 + 1 + i;
+								if (i % 2 == 0) {
+									row += "<tr>";
+								} else {
+									row += "<tr style='background-color:#f4f8f9'>";
+								}
+								row += "<td>" + xuhao + "</td>";
+								row += "<td>" + vJson.data[i].username
+										+ "</td>";
+								row += "<td>" + vJson.data[i].gold_count
+										+ "</td>";
+								row += "<td>"
+										+ getSendName(vJson.data[i].send_type);
+								+"</td>";
+								row += "<td>" + vJson.data[i].send_time
+										+ "</td>";
+								row += "</tr>";
+							}
+						}
+						var footPage = "";
+						footPage += "\<tr align='right'\>";
+						footPage += "\<td class='pages' style='align:right;border-top:1px solid #bdd0db;' colspan='14'\>";
+						footPage += "\<div id='pagediv' class='fy'\>\</div\>";
+						footPage += "\</td\>";
+						footPage += "\</tr\>";
+						$("#table2").html(table2th + row + footPage);
+					}
+					$("#pagediv").children().remove();
+					var pageV = new pageView("#pagediv");
+					pageV.totalCount = vJson.total;
+					pageV.index = pageNo;
+					pageV.onclick = function(index) {
+						onloadEmplInfo(index, params);
+					};
+					pageV.render();
+				}, true);
+	}
+
+	function chongZi() {
+		//名字为emplForm的form表单重置
+		emplForm.reset();
+		window.location.href = "gold_send_list.html";
+	}
+	/***
+		文件下载
+	***/
+	function downLoad() {
+		var url = pageContextPath + "/Report/downLoad.do";
+		sendRequest(
+				url,
+				null,
+				function(datas) {
+					var myurl = pageContextPath+datas.data;
+					window.location.href = myurl;
+				},false);
+	}
+</script>
+<body>
+	<form method="post" name="emplForm" id="emplForm">
+		<div id="hiddenDiv"></div>
+		<div class="container">
+			<div class="detail">
+				<b></b><span>金币发放记录</span>
+			</div>
+			<div id="content">
+				<fieldset>
+					<div>
+						<table id="table1" style="width:100%;">
+							<tr>
+								<td>发放类别：<select id="send_type" name="send_type"
+									class="select" style="width:153px;">
+										<option value="3" selected="selected">系统发放记录</option>
+										<option value="2">分享奖励记录</option>
+										<!--  	<option value="3">流量奖励记录</option> 1关注,2分享奖励记录，3系统奖励-->
+										<option value="1">关注奖励记录</option>
+								</select>
+								</td>
+							</tr>
+							<tr>
+
+							</tr>
+						</table>
+						<div class="btncon">
+							<a href="#" onclick="queryEmplInfoBy()"><div class="btns">查询</div>
+							</a> 
+							<a href="#" onclick="chongZi()"><div class="btns">重置</div>
+							</a>
+							<a href="#" onclick="downLoad()"><div class="btns">下载</div>
+							</a>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+			<div class="pl"></div>
+		</div>
+		<div>
+			<table id="table2"
+				style="width:100%;word-break:break-all; word-wrap:break-word;">
+			</table>
+		</div>
+	</form>
+</body>
+</html>

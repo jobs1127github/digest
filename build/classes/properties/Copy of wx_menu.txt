@@ -1,0 +1,39 @@
+{       
+    "button": [
+        {
+            "type": "view",
+            "name": "社区",
+            "url": "http://www.51pharm.cn:8000/forum/plugin.php?id=wechat:access"
+        },
+        {
+            "name": "健康资讯",
+            "sub_button": [
+                {
+                    "type": "view",
+                    "name": "全部资讯",
+                    "url": "http://www.51pharm.cn/digest/wechat/youhui.do?type=1"
+                },
+                {
+                    "type": "view",
+                    "name": "精品资讯",
+                    "url": "http://www.51pharm.cn/digest/wechat/youhui.do?type=2"
+                }
+            ]
+        },
+        {
+            "name": "个人中心",
+            "sub_button": [
+                {
+                    "type": "click",
+                    "name": "免费专家",
+                    "key": "customer_service"
+                },
+                {
+                    "type": "view",
+                    "name": "我@全泰",
+                    "url": "http://www.51pharm.cn/digest/wechat/youhui.do?type=3"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,119 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>群组资料详情</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="description" content="This is my page">
+    <link href="../../css/table.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/global.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../../javascript/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="../../javascript/jquery.alerts.js"></script>
+    <script type="text/javascript" src="../../javascript/calendar.js"></script>
+    <script type="text/javascript" src="../../javascript/httpService.js"></script>
+    <script type="text/javascript" src="../../javascript/page.js"></script>
+    <script type="text/javascript" src="../../javascript/validata.js"></script>
+    <script type="text/javascript" src="../../javascript/jquery.datepick.js"></script>
+    <script type="text/javascript" src="../../javascript/jquery.datepick-zh-CN.js"></script>
+    <link type="text/css" href="../../css/smoothness.datepick.css" rel="stylesheet" />
+    <!-- 删除已经上传的单个文件的公共方法 -->
+    <script type="text/javascript" src="../../javascript/public.js"></script>
+    <script type="text/javascript" src="../../javascript/loadSelects.js"></script>
+    <script type="text/javascript" src="../../javascript/toPingYin.js"></script> 
+     <script type="text/javascript" src="../../javascript/window.js"></script>
+    <base target="_self">
+    
+</head>
+<script>
+var type="";
+$(function () {
+
+    });
+	
+	//获取地址栏?后的参数
+	function getQueryString(name) {
+	    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+	    var r = window.location.search.substr(1).match(reg);
+	    if (r != null) return unescape(r[2]); return null;
+	}
+	function init(){
+		var group_id = getQueryString("group_id");
+		 type=getQueryString("type");
+		//为单个群组资料对象赋值
+				if(type=="1"){
+		sendRequest(pageContextPath+"/group/queryGroupById.do",{"group_id":group_id},function (jsonData){
+			var data = jsonData.data;
+				   $("#group_id").val(data.group_id);
+				   $("#group_name").val(data.group_name);
+				   $("#description").val(data.description);
+
+
+
+		},false);
+		$("#group_id").attr("readonly",true); 
+				}
+	}
+	
+
+
+	function updateEmplInfo(){
+		if ($("#group_name").val().trim()=="" ) {
+			alert("名称为空");
+			$("#group_name").focus();
+			return;
+		}
+		var params = $("#emplChangeTable").serialize();
+		if(type=="1"){	sendRequest(pageContextPath+"/group/updateGroup.do", params, function(jsonData) {
+			if (jsonData.data == 1) {
+				alert("更新成功");
+				window.close();
+				closeWin();
+			  }else{
+				  alert("更新失败!请联系管理员");
+				  }
+			},false);
+		}
+		if(type=="2"){	sendRequest(pageContextPath+"/group/saveGroup.do", params, function(jsonData) {
+				if (jsonData.data == 1) {
+					alert("新建成功");
+					 window.opener.location.reload(true);
+					window.close();
+				  }else{
+					  alert("新建失败!请联系管理员");
+					  }
+				},false);
+		}	
+	}
+	 
+</script>
+ 
+<body style='overflow:scroll;overflow-x:hidden' onload="init()">
+<div style="margin-bottom:10px;"><img src="../../images/t.png" /><span style="font-size:18px;">群组资料详情</span></div>
+<form name="emplChangeTable" id="emplChangeTable" method="post">
+<input type="hidden" name="group_id" id="group_id" />
+<fieldset>
+    <legend ><strong>基本情况</strong></legend>
+    <table id="ChangeTable">
+        <tr>
+            
+            <td>群组名称</td>
+            <td><input type="text" name="group_name" id="group_name" /></td>
+        </tr>
+        <tr>
+            <td>描述</td>
+            <td>
+            <textarea rows="5" cols="3" name="description" id="description" ></textarea>
+            </td>
+        </tr>
+</table>
+    <div style="float:left; text-align:center; margin-left:300.5px;">
+
+        <a href="#" onclick="updateEmplInfo()"><div class="btns1" >保存</div></a>
+        <a href="#" onclick="window.close()"><div class="btns1" >关闭</div></a>
+        </div>
+</fieldset>
+</form>
+</body>
+</html>

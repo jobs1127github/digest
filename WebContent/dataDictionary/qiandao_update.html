@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>更新签到</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta http-equiv="description" content="This is my page">
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script type="text/javascript" src="../javascript/validata.js"></script>
+<script type="text/javascript" src="../javascript/jquery.datepick.js"></script>
+<script type="text/javascript"
+	src="../javascript/jquery.datepick-zh-CN.js"></script>
+<link type="text/css" href="../css/smoothness.datepick.css"
+	rel="stylesheet" />
+<!-- 删除已经上传的单个文件的公共方法 -->
+<script type="text/javascript" src="../javascript/public.js"></script>
+<script type="text/javascript" src="../javascript/loadSelects.js"></script>
+<script type="text/javascript" src="../javascript/toPingYin.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+<base target="_self">
+
+</head>
+<script>
+	//父页面刷新加载
+	window.onunload = function() {
+		window.opener.location.reload();
+	};
+</script>
+<script>
+	//获取地址栏?后的参数
+	function getQueryString(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+		var r = window.location.search.substr(1).match(reg);
+		if (r != null)
+			return unescape(r[2]);
+		return null;
+	}
+	function init() {
+		var datakey = getQueryString("datakey");
+		//为单个员工资料对象赋值
+		sendRequest(pageContextPath + "/system/showBiaoQianInfo.do", {
+			"datakey" : datakey
+		}, function(jsonData) {
+			var data = jsonData.data;
+			$("#mark_name").val(data.mark_name);
+			$("#mark_code").val(data.mark_code);
+		}, false);
+	}
+
+	function closeWin() {
+		window.close();
+		window.location.href = "information_mark_list.html";
+	}
+
+	function updateDataDictionaryInfo() {
+		var dataItem = $("#mark_name").val();
+		if (dataItem == null || dataItem == "") {
+			alert("资讯标签不能为空!");
+			return;
+		}
+		var params = $("#DataDictionaryChangeTable").serialize();
+		sendRequest(pageContextPath + "/system/updateMarkInfo.do", params,
+				function(jsonData) {
+					if (jsonData.data == 1) {
+						alert("更新成功");
+						closeWin();
+					} else {
+						alert("更新失败!");
+					}
+				}, false);
+
+	}
+	function queryDataDictionaryInfo(pageNo) {
+		alert(pageNo);
+		var params = $("#DataDictionaryChangeTable").serialize();
+		onloadDataDictionaryInfo(pageNo, params);
+	}
+	function onloadDataDictionaryInfo(pageNo, params) {
+		var url = pageContextPath + "/system/queryBiaoQianInfos.do";
+		sendRequest(
+				url,
+				"pageSize=15&pageNo=" + pageNo + "&" + params,
+				function(datas) {
+					var vJson = datas;
+					$("#table2").html("");
+					var table2th = "";
+					table2th += "\<tr id='headtr'\>";
+					if (vJson.data == null) {
+						$("#table2").html(
+								"\<th style='width:826px;'\>没有与之相关的词条\</th\>");
+
+					} else {
+						table2th += "\<th style='width:40%;' class='td_emplName'\>资讯标签\</th\>";
+						table2th += "\<th style='width:30%;' class='td_emplName'\>编辑\</th\>";
+						table2th += "\<th style='width:30%;' class='td_emplName'\>删除\</th\>";
+						table2th += "\</tr\>";
+						var row = "";
+						if (vJson.data.length > 0) {
+							for ( var i = 0; i < vJson.data.length; i++) {
+								if (i % 2 == 0) {
+									row += "<tr>";
+								} else {
+									row += "<tr style='background-color:#f4f8f9'>";
+								}
+								row += "<td >" + vJson.data[i].dataValue
+										+ "</td>";
+								row += "<td>";
+								row += "<a href='#' style='margin-right:3px;width=4%'  class='cz' onclick='openwin(this)' datakey="
+										+ vJson.data[i].dataItem + ">编辑</a>";
+								row += "</td>";
+								row += "<td>";
+								row += "<a href='#' class='cz' style='margin-right:3px;' onclick='delDataDictionaryInfo(this)' datakey='"
+										+ vJson.data[i].dataItem + "' >删除</a>";
+								row += "</td>";
+								row += "</tr>";
+							}
+						}
+						var footPage = "";
+						footPage += "\<tr align='right'\>";
+						footPage += "\<td class='pages' style='align:right;border-top:1px solid #bdd0db;' colspan='14'\>";
+						footPage += "\<div id='pagediv' class='fy'\>\</div\>";
+						footPage += "\</td\>";
+						footPage += "\</tr\>";
+						$("#table2").html(table2th + row + footPage);
+					}
+					$("#pagediv").children().remove();
+					var pageV = new pageView("#pagediv");
+					pageV.totalCount = vJson.total;
+					pageV.index = pageNo;
+					pageV.onclick = function(pageNo) {
+						onloadDataDictionaryInfo(pageNo, params);
+					};
+					pageV.render();
+				}, true);
+	}
+</script>
+
+<body style='overflow: scroll; overflow-x: hidden' onload="init()">
+	<div style="margin-bottom: 10px;">
+		<img src="../images/t.png" /><span style="font-size: 18px;">更新签到</span>
+	</div>
+	<form name="DataDictionaryChangeTable" id="DataDictionaryChangeTable"
+		method="post">
+		<fieldset>
+			<legend>
+				<strong>更新签到</strong>
+			</legend>
+			<table id="ChangeTable">
+				<tr>
+					<td>更新签到</td>
+					<td><input type="text" name="mark_name" id="mark_name" /> <input
+						type="text" name="mark_code" id="mark_code" style="display:none" />
+					</td>
+				</tr>
+			</table>
+		</fieldset>
+		<br />
+		<div style="float: left; text-align: center; margin-left: 300.5px;">
+			<a href="#" onclick="updateDataDictionaryInfo()"><div
+					class="btns1">保存</div> </a> <a href="#" onclick="window.close()"><div
+					class="btns1">关闭</div> </a>
+		</div>
+	</form>
+</body>
+</html>

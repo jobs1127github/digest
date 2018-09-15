@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:ehcache="http://www.springmodules.org/schema/ehcache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+	   
+	<!-- 读取properties -->
+	<bean id="propertyConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="locations">
+         <list>
+            <value>classpath*:/properties/config.properties</value>
+            <value>classpath*:/properties/weixin-config.properties</value>
+         </list>
+      </property>
+	</bean>
+	
+	<!--这个配置帮忙处理了四个bean，包括：AutowiredAnnotationBeanPostProcessor/
+		CommonAnnotationBeanPostProcessor/PersistenceAnnotationBeanPostProcessor/
+		RequiredAnnotationBeanPostProcessor -->
+  	<context:annotation-config/>
+  	
+  	<!-- 对指定包进行组件扫描-->
+	<context:component-scan base-package="com.tentinet.app"/>
+	<context:component-scan base-package="com.tentinet.weixin" />
+	
+	<!-- 定义的切面，也要交由spring容器来管理 -->
+	<context:component-scan base-package="cn.jobs1127" />
+	<!-- 切面编程 proxy-target-class默认为true-->
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+	   
+	<!-- 资源文件绑定器 -->
+    <bean id="messageSource"
+          class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="message"/>
+        <property name="useCodeAsDefaultMessage" value="true"/>
+    </bean>
+    
+	 <!-- 访问会自动寻找jsp -->
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="suffix" value=".jsp" />
+	</bean>
+	 
+	<!-- 引入数据源 -->
+	<import resource="dataSource.xml"/>
+	<!-- 引入SqlMapClient -->
+	<import resource="dataAccessContext-ibaties.xml"/>
+	<!-- 引入hibernateTemplate -->
+	<import resource="dataAccessContext-hibernate.xml"/>
+	<!-- 引入事务管理 -->
+	<!-- <import resource="transaction.xml"/> -->
+	
+	<!-- Spring 上下文 -->
+	<!-- <bean id="springContextUtil" class="com.cntaiping.tpi.weixin.gs.system.SpringContextUtil"/> -->
+	  
+	</beans>

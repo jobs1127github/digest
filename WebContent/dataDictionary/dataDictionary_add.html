@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>新增数据字典</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta http-equiv="description" content="This is my page">
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript"
+	src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script type="text/javascript" src="../javascript/validata.js"></script>
+<script type="text/javascript" src="../javascript/jquery.datepick.js"></script>
+<script type="text/javascript"
+	src="../javascript/jquery.datepick-zh-CN.js"></script>
+<link type="text/css" href="../css/smoothness.datepick.css"
+	rel="stylesheet" />
+<!-- 删除已经上传的单个文件的公共方法 -->
+<script type="text/javascript" src="../javascript/public.js"></script>
+<script type="text/javascript" src="../javascript/loadSelects.js"></script>
+<script type="text/javascript" src="../javascript/toPingYin.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+<base target="_self">
+
+</head>
+<script>
+	window.onunload = function(){ 
+	window.opener.location.reload(); 
+} 
+</script>
+<script>
+	//获取地址栏?后的参数
+	
+	function closeWin(){
+		window.location.href="dataDictionary_list.html";
+	}  
+
+	function saveDataDictionaryInfo(){
+		var dataItem=$("#dataItem").val();
+		if (dataItem==null || dataItem=="") {
+			alert("真实值不能为空!");
+			return;
+		}
+
+		var dataValue=$("#dataValue").val();
+		if (dataValue==null || dataValue=="") {
+			 alert(" 显示值不能为空!");
+			return;
+		}
+
+		var dataType=$("#dataType").val();
+		if (dataType==null || dataType=="") {
+			 alert("字典类型不能为空!");
+			return;
+		}
+
+			var params = $("#DataDictionaryAddTable").serialize();
+			sendRequest(pageContextPath+"/system/saveDataDictionaryInfo.do", params, function(jsonData) {
+			if (jsonData.data == 1) {
+				alert("新增成功");
+				window.close();
+			  }else{
+				  alert("新增失败!真实值不能有重复！！！");
+				  }
+			},false);
+			
+	}
+</script>
+
+<body style='overflow: scroll; overflow-x: hidden' >
+	<div style="margin-bottom: 10px;">
+		<img src="../images/t.png" /><span style="font-size: 18px;">字典详情</span>
+	</div>
+	<form name="DataDictionaryAddTable" id="DataDictionaryAddTable" method="post">
+		<fieldset>
+			<legend>
+				<strong>资讯类别</strong>
+			</legend>
+			<table id="AddTable">
+				<tr>
+					<td>编号</td>
+					<td><input readonly="readonly" placeholder="不用填写" type="text" name="datakey" id="datakey"/></td>
+					
+					<td>显示值<a style="color: red;">*</a></td>
+					<td><input type="text" name="dataValue" id="dataValue" /></td>
+					
+				</tr>
+				<tr>
+					
+	               <td>类型<a style="color: red;">*</a></td>
+					<td><input type="text" name="dataType" id="dataType" /></td>
+					<td>是否有效<a style="color: red;">*</a></td>
+					<td><select id="status" name="status" style="width: 150px">
+							<option value="Y" selected="selected">有效</option>
+							<option value="N">无效</option>
+					</select></td>
+				</tr>
+				<tr>
+				<td>真实值<a style="color: red;">*</a></td>
+					<td>
+					 <textarea rows="30" cols="20" name="dataItem" id="dataItem"></textarea>
+					</td>
+				</tr>
+				
+			</table>
+		</fieldset>
+		<br />
+		<div style="float: left; text-align: center; margin-left: 300.5px;">
+			<a href="#" onclick="saveDataDictionaryInfo()"><div class="btns1">保存</div></a>
+			<a href="#" onclick="window.close()"><div class="btns1">关闭</div></a>
+		</div>
+	</form>
+</body>
+</html>

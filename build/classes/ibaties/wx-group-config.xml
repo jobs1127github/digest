@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="group">
+	<typeAlias alias="UserGroupVo" type="com.tentinet.app.bean.UserGroupVo" />
+	<!-- 查询群组列表 -->
+	<select id="queryGroupList" parameterClass="java.util.Map"
+		resultClass="UserGroupVo">
+		SELECT a.`group_id`,a.`group_name`,a.`description` ,
+		(select count(1) from wx_openid_wxno t where t.group_id=a.group_id) as peoples
+		FROM wx_user_group a WHERE 1=1 
+		<isNotEmpty property="group_id" prepend="and">
+		   a.`group_id`=#group_id#
+		 </isNotEmpty>
+		 <isNotEmpty property="group_name" prepend="and">
+		     a.`group_name` LIKE #group_name#
+		   </isNotEmpty>
+	</select>
+	<!-- 查询群组的数量 -->
+	<select id="queryGroupCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1)
+		FROM wx_user_group a WHERE 1=1 
+		<isNotEmpty property="group_id" prepend="and">
+		   a.`group_id`=#group_id#
+		 </isNotEmpty>
+		 <isNotEmpty property="group_name" prepend="and">
+		     a.`group_name` LIKE #group_name#
+		   </isNotEmpty>	
+	</select>
+	
+	<update id="deleteGroup" parameterClass="java.util.Map">
+		delete from wx_user_group where  group_id=#group_id#
+	</update>
+</sqlMap> 

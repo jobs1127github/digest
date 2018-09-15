@@ -1,0 +1,295 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title></title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/loadSelect.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script src="../js/global.js"></script>
+<script type="text/javascript"
+	src="../javascript/ztree/jquery.ztree.core-3.5.js"></script>
+<link type="text/css" href="../javascript/ztree/zTreeStyle.css"
+	rel="stylesheet"></link>
+<script type="text/javascript"
+	src="../javascript/ztree/jquery.ztree.excheck-3.5.js"></script>
+<style type="text/css">
+</style>
+<script>
+	function changeStatus(_this, status) {
+		if (window.confirm("确认操作吗？")) {
+			var information_id = $(_this).attr("information_id");
+
+			sendRequest(pageContextPath + "/boutique/updateBoutique.do", {
+				"information_id" : information_id,
+				"status" : status
+			}, function(datas) {
+				var vJson = datas;
+				if (datas) {
+					alert("操作成功");
+					window.location.href = "boutique_list_b.html";
+				}
+			});
+		}
+	}
+
+	function openwin(_this, type) {
+		var information_id = $(_this).attr("information_id");
+		if (type == 1) {
+
+			var winPar = window
+					.open("boutiaue_ChangeTable.html?information_id="
+							+ information_id, "newwindow",
+							"center:yes;resizable=no;status=no;dialogheight=200px;dialogwidth=200px;");
+		} else {
+			var winPar = window
+					.open("boutiaue_showTable.html?information_id="
+							+ information_id, "newwindow",
+							"center:yes;resizable=no;status=no;dialogheight=200px;dialogwidth=200px;");
+
+		}
+		if (winPar == "refresh") {
+			window.location.reload();
+		}
+	}
+
+	function openwin2() {
+		var winPar = window
+				.open("boutiaue_AddTable.html", "newwindow2",
+						"center:yes;resizable=no;status=no;dialogheight=200px;dialogwidth=200px;");
+		if (winPar == "refresh") {
+			window.location.reload();
+		}
+	}
+
+	function queryInformationInfo(pageNo) {
+		var params = $("#informationForm").serialize();
+		onloadInformationInfo(pageNo, params);
+	}
+	
+	function onloadInformationInfo(pageNo, params) {
+		var url = pageContextPath + "/boutique/queryBoutique.do";
+		sendRequest(
+				url,
+				"pageSize=15&pageNo=" + pageNo + "&" + params,
+				function(datas) {
+					var vJson = datas;
+					$("#table2").html("");
+					var table2th = "";
+					table2th += "\<tr id='headtr'\>";
+
+					if (vJson.data == null) {
+						$("#table2").html(
+								"\<th style='width:100%;'\>没有与之相关的资讯\</th\>")
+
+					} else {
+						//标题、发表时间、作者、状态、打赏金额、状态显示、标签
+						table2th += "\<th style='width:15px;'>\<input type='checkbox' id='checktop' onclick='checkAll(this)' /\>\</th\>";
+						table2th += "\<th style='width:100px;' \>资讯名称\</th\>";
+						table2th += "\<th style='width:150px;' \>创建时间\</th\>";
+						table2th += "\<th style='width:80px;' \>状态\</th\>";
+						table2th += "\<th style='width:137px;'\>操作\</th\>";
+						table2th += "\</tr\>";
+						var row = "";
+						if (vJson.data.length > 0) {
+							for ( var i = 0; i < vJson.data.length; i++) {
+								if (i % 2 == 0) {
+									row += "<tr>";
+								} else {
+									row += "<tr style='background-color:#f4f8f9'>";
+								}
+
+								row += "<td>&nbsp&nbsp<input type='checkbox' name='checks' onclick='doublecheck()'  value="
+										+ vJson.data[i].information_id
+										+ " /></td>";
+								var title = vJson.data[i].title;
+								if (title.length > 10) {
+									title = title.substr(0, 10) + '...';
+								}
+								row += "<td>"
+										+ "<a style='text-decoration:underline;width:52px;' href='#' onclick='openwin(this)' information_id='"
+										+ vJson.data[i].information_id + "'>"
+										+ title + "</a>" + "</td>";
+								row += "<td>" + vJson.data[i].created_time
+										+ "</td>";
+								row += "<td>"
+										+ getStatusName(vJson.data[i].status);
+								+"</td>";
+								row += "<td>";
+								row += "<a href='#'  style='margin-right:3px;width=4%'  class='cz' onclick='openwin(this,1)' information_id='"
+										+ vJson.data[i].information_id
+										+ "'>编辑</a>";
+
+								if (vJson.data[i].status == 3) {
+									row += "<a href='#' class='cz' style='margin-right:3px;' onclick='changeStatus(this,4)' information_id='"
+											+ vJson.data[i].information_id
+											+ "' >隐藏</a>";
+
+								}
+								if (vJson.data[i].status == 4) {
+									row += "<a href='#' class='cz' style='margin-right:3px;' onclick='changeStatus(this,3)' information_id='"
+											+ vJson.data[i].information_id
+											+ "' >显示</a>";
+
+								}
+								row += "<a href='#' class='cz' style='margin-right:3px;' onclick='openwin(this)' information_id='"
+										+ vJson.data[i].information_id
+										+ "' >详情</a>";
+
+								row += "</td>";
+								row += "</tr>";
+							}
+						}
+						var footPage = "";
+						footPage += "\<tr align='right'\>";
+						footPage += "\<td class='pages' style='align:right;border-top:1px solid #bdd0db;' colspan='14'\>";
+						footPage += "\<div id='pagediv' class='fy'\>\</div\>";
+						footPage += "\</td\>";
+						footPage += "\</tr\>";
+						$("#table2").html(table2th + row + footPage);
+					}
+					$("#pagediv").children().remove();
+					var pageV = new pageView("#pagediv");
+					pageV.totalCount = vJson.total;
+					pageV.index = pageNo;
+					pageV.onclick = function(pageNo) {
+						queryInformationInfo(pageNo, params);
+					};
+					pageV.render();
+				}, true);
+	}
+
+	function chongZi() {
+		roleManagerForm.reset();
+		window.location.href = "boutique_list_b.html";
+	}
+
+	$(function() {
+		var data1 = getQueryMark("");
+		$("#mark").empty();
+		$("#mark").append("<option value=''>全部</option>");
+		for ( var i = 0; i < data1.length; i++) {
+			$("#mark").append(
+					"<option value='"+data1[i].dataItem+"'>"
+							+ data1[i].dataValue + "</option>");
+		}
+		sendRequest(pageContextPath + "/system/loadinitExpert.do", {},
+				function(jsonData) {
+					var data1 = jsonData.data;
+					$("#openid").empty();
+					$("#openid").append("<option value=''>全部</option>");
+					for ( var i = 0; i < data1.length; i++) {
+						$("#openid").append(
+								"<option value='"+data1[i].dataItem+"'>"
+										+ data1[i].dataValue + "</option>");
+					}
+				}, false);
+		queryInformationInfo(1); //默认查询
+	});
+
+	function changeTStatus(status) {
+		var flag = false;
+		var deId = document.getElementsByName("checks");
+		for ( var i = 0; i < deId.length; i++) {
+			if (deId[i].checked) {
+				flag = true;
+			}
+		}
+		if (!flag) {
+			alert("请选择需要审核的资讯");
+			return;
+		} else {
+
+			if (window.confirm("确认提交吗？")) {
+				var information_id = '';
+				$('input:checked[name=checks]').each(function() {
+					information_id = information_id + $(this).val() + ',';
+				});
+				$.ajax({
+					url : pageContextPath + "/boutique/allUpdateBoutiques.do",
+					data : {
+						"information_id" : information_id,
+						"status" : status
+					},
+					type : "POST",
+					success : function(data) {
+						window.location.href = "boutique_list_b.html";
+					}
+				});
+
+			} else {
+				return false;
+			}
+		}
+
+	}
+</script>
+</head>
+<body>
+
+	<form id="informationForm" method="post">
+		<div class="container">
+			<div class="detail">
+				<b></b><span>已发布精品资讯管理</span>
+			</div>
+			<input type="hidden" id="htmlRole">
+
+			<div id="content">
+				<fieldset>
+					<div>
+						<table id="table1" style="width:100%">
+							<tr>
+								<td>资讯标题</td>
+								<td><input class="inp" name="title" type="text" id="title" />
+								</td>
+								<td>资讯状态</td>
+								<td><select id="status" name="status" class="select"
+									style="width:153px;">
+										<option value="0" selected="selected">--</option>
+										<option value="3">已发布</option>
+										<option value="4">已隐藏</option>
+								</select>
+								</td>
+							</tr>
+						</table>
+						<br />
+					</div>
+					<div class="btncon">
+						<a href="javascript:void(0);" onclick="queryInformationInfo(1)">
+						<div class="btns" style="margin-top:0">查询2</div>
+						</a> 
+					</div>
+				</fieldset>
+				<div class="pl">
+					<div class="pl_l">
+						<img src="../img/tianjia.png" width="16" height="16">
+						<a href="javascript:changeTStatus(4);">隐藏</a>
+					</div>
+					<div class="pl_l">
+						<img src="../img/tianjia.png" width="16" height="16">
+						<a href="javascript:changeTStatus(3);">显示</a>
+					</div>
+				</div>
+				<div>
+					<table id="table2"
+						style="width:100%;word-break:break-all; word-wrap:break-word;">
+					</table>
+				</div>
+			</div>
+		</div>
+	</form>
+
+
+</body>
+</html>

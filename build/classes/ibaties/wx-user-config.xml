@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="WXUser">
+	<typeAlias alias="WXUserVo" type="com.tentinet.app.bean.WXUserVo" />
+		<typeAlias alias="WXUserDto" type="com.tentinet.app.bean.dto.WXUserDto" />
+	<!-- 查询用户列表 -->
+	<select id="queryWXUserInfos" parameterClass="java.util.Map"
+		resultClass="WXUserDto">
+		SELECT
+		      aa.openid,
+		      (select t.text from  wx_user_chat_log t where t.openid=aa.openid ) as text,
+		      IFNULL(c.gold_count,0.00) as gold,
+			  aa.username,
+			  aa.status,
+			  aa.publicno,
+			  aa.username,
+			  aa.telphone,
+			  aa.role,
+			  aa.head_portrait as head_portrait,
+			  aa.created_by,
+			  aa.updated_by,
+			  aa.created_time,
+			  aa.updated_time,
+			  aa.age,
+			  aa.sex,
+			  aa.country,aa.province,aa.city,
+			  aa.expert,
+			  aa.group_id,
+			  aa.group_name,
+			  0 as got_money,
+			  (select IFNULL(t.money_count,0.00) from wx_expert_money t where t.openid=aa.openid)  as can_get_money,
+			 (SELECT COUNT(1) FROM wx_information a ,wx_information_award_info i WHERE a.information_id=i.information_id AND a.openid= aa.openid)as award_count,
+			  (select count(1) from wx_information where openid= aa.openid) as information_count
+	   FROM
+            (
+				SELECT
+						a.openid,
+						a.username,
+						a.head_portrait,
+						a.status,
+						a.publicno,
+						a.telphone,
+						a.role,
+						a.created_by,
+						a.updated_by,
+						a.created_time,
+						a.updated_time,
+						a.age,
+						a.sex,
+						a.country,a.province,a.city,
+						a.group_id,
+						a.expert,
+						(SELECT group_name FROM wx_user_group WHERE group_id=a.group_id) AS group_name
+						
+				FROM 
+				        wx_openid_wxno a
+				        WHERE 1=1
+						<isNotEmpty property="wxno" prepend="and">
+							a.wxno like
+							#wxno#
+						</isNotEmpty>
+				
+						<isNotEmpty property="username" prepend="and">
+							a.username like
+							#username#
+						</isNotEmpty>
+				
+						<isNotEmpty property="role" prepend="and">
+							a.role=#role#
+						</isNotEmpty>
+						<isNotEmpty property="role_02" prepend="and">
+							a.role in ('0','2')
+						</isNotEmpty>		
+				
+						<isNotEmpty property="status" prepend="and">
+							a.status =#status#
+						</isNotEmpty>
+						
+						<isNotEmpty property="openid" prepend="and">
+							a.openid =#openid#
+						</isNotEmpty>
+				 order by updated_time desc
+	         ) aa
+			LEFT JOIN 
+			        wx_user_gold_count c 
+			ON 
+			        c.openid = aa.openid
+	</select>
+	<!-- 查询用户的数量 -->
+	<select id="queryWXUserCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		select count(1)
+		from wx_openid_wxno a where 1=1
+		<isNotEmpty property="wxno" prepend="and">
+			a.wxno like
+			#wxno#
+		</isNotEmpty>
+
+		<isNotEmpty property="username" prepend="and">
+			a.username like
+			#username#
+		</isNotEmpty>
+
+		<isNotEmpty property="role" prepend="and">
+			a.role=#role#
+		</isNotEmpty>
+		<isNotEmpty property="role_02" prepend="and">
+			a.role in ('0','2')
+		</isNotEmpty>		
+
+		<isNotEmpty property="status" prepend="and">
+			a.status =#status#
+		</isNotEmpty>
+		<isNotEmpty property="openid" prepend="and">
+			a.openid =#openid#
+		</isNotEmpty>
+	</select>
+	
+	<update id="updateWXUserInfos" parameterClass="java.util.Map">
+	    UPDATE 
+	          wx_openid_wxno 
+	  <dynamic prepend="set">  
+          <isNotEmpty prepend="," property="username">
+                 username = #username#            
+          </isNotEmpty>
+          <isNotEmpty prepend="," property="telphone">
+                 telphone = #telphone#            
+          </isNotEmpty>
+           <isNotEmpty prepend="," property="areaId">
+                 areaId = #areaId#            
+          </isNotEmpty>
+      </dynamic>  
+        WHERE
+              openid = #openid#    
+	</update>
+	
+	
+	<!-- 前十名打赏用户 -->
+	<select id="queryTopTenExpenseUser" parameterClass="java.util.Map" resultClass="WXUserVo">
+          select tt.username ,tt.head_portrait as head_portrait, tt.gold as gold from (
+	      SELECT b.award_openid,
+	           (select t.username from wx_openid_wxno t where t.openid= b.award_openid ) as username, 
+	           (select t.head_portrait from wx_openid_wxno t where t.openid= b.award_openid ) as head_portrait,
+				sum(b.gold) as gold
+	      FROM 
+               wx_openid_wxno a,
+               wx_information_award_info b,
+               wx_information c 
+          WHERE 
+                 a.openid=c.openid
+          and 
+                 c.information_id=b.information_id  
+					and a.openid=#openid#
+          group by  b.award_openid 
+				)	 tt order by tt.gold desc
+           LIMIT
+                   0,10 
+	</select>
+	
+	
+	<!-- 支出的用户列表 -->
+	<select id="queryExpenseUser" parameterClass="java.util.Map" resultClass="WXUserVo">
+	     SELECT 
+	           tt.publicno,
+	           tt.username, 
+	           tt.head_portrait,
+	           tt.province,
+	           tt.city,
+	           tt.country,
+               tt.gold as gold from (
+	     SELECT b.award_openid,
+	           (select t.username from wx_openid_wxno t where t.openid= b.award_openid ) as username, 
+	           (select t.head_portrait from wx_openid_wxno t where t.openid= b.award_openid ) as head_portrait,
+			   sum(b.gold) as gold,
+			   (select t.publicno from wx_openid_wxno t where t.openid= b.award_openid ) as publicno, 
+	           (select t.province from wx_openid_wxno t where t.openid= b.award_openid ) as province,
+	           (select t.city from wx_openid_wxno t where t.openid= b.award_openid ) as city,
+	           (select t.country from wx_openid_wxno t where t.openid= b.award_openid ) as country
+	      FROM 
+               wx_openid_wxno a,
+               wx_information_award_info b,
+               wx_information c 
+          WHERE 
+                 a.openid=c.openid
+          and 
+                 c.information_id=b.information_id  
+					and a.openid=#openid#
+          group by  b.award_openid 
+				)	 tt order by 	tt.gold desc
+	     limit $beginnum$,10
+	</select>
+	
+	
+	<!-- 支出的用户列表 -->
+	<select id="queryExpenseUserCount" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+	      SELECT 
+	           count(1) from (
+	     SELECT b.award_openid,
+	           (select t.username from wx_openid_wxno t where t.openid= b.award_openid ) as username, 
+	           (select t.head_portrait from wx_openid_wxno t where t.openid= b.award_openid ) as head_portrait,
+			   sum(b.gold) as gold,
+			   (select t.publicno from wx_openid_wxno t where t.openid= b.award_openid ) as publicno, 
+	           (select t.province from wx_openid_wxno t where t.openid= b.award_openid ) as province,
+	           (select t.city from wx_openid_wxno t where t.openid= b.award_openid ) as city,
+	           (select t.country from wx_openid_wxno t where t.openid= b.award_openid ) as country
+	      FROM 
+               wx_openid_wxno a,
+               wx_information_award_info b,
+               wx_information c 
+          WHERE 
+                 a.openid=c.openid
+          and 
+                 c.information_id=b.information_id  
+					and a.openid=#openid#
+          group by  b.award_openid 
+				)	 tt order by 	tt.gold
+	</select>
+	
+	
+	<!-- 查询用户可打赏余额 -->
+	<select id="querygold" parameterClass="java.util.Map" resultClass="WXUserDto">
+	    SELECT
+		openid,
+		gold_count AS gold
+		
+		FROM wx_user_gold_count 
+		WHERE openid=#openid#
+	</select>
+	
+	
+	
+	<!-- 查询用户信息 -->
+	<select id="queryUserInfo" parameterClass="java.util.Map"
+		resultClass="WXUserDto">
+	     SELECT
+	            a.username,
+	            a.head_portrait,
+	            sex,
+	            province,
+	            city,
+	            country,
+	            IFNULL(b.gold_count,0.00)  as gold,
+	            a.created_time,
+	            age,
+	            role
+	      FROM 
+	           wx_openid_wxno a
+	      LEFT JOIN
+	           wx_user_gold_count b
+	      ON
+	          a.openid = b.openid
+         WHERE
+              1 = 1
+              <isNotEmpty prepend="and" property="open_id">
+                 a.openid = #open_id#            
+              </isNotEmpty>
+	</select>
+	
+	
+	
+	<!-- 查询资讯的打赏人 -->
+	<select id="queryRewarders" parameterClass="java.util.Map" resultClass="WXUserDto">	
+	    SELECT o.openid as openid,
+	    o.username as username,
+	    o.head_portrait as head_portrait,
+	    o.province,
+	    o.city,
+	    o.country,
+	     IFNULL(a.gold,0)  as gold,
+	    o.created_time as created_time
+	    FROM wx_information_award_info a 
+	    LEFT JOIN wx_openid_wxno o ON a.award_openid=o.openid
+	    WHERE a.information_id=#information_id#
+	    limit $beginnum$,10
+	</select>
+	
+	<!-- 查询资讯的打赏人 -->
+	<select id="queryInfoRewarders" parameterClass="java.util.Map" resultClass="WXUserDto">	
+	    SELECT DISTINCT o.openid,
+	    o.username,
+	    o.head_portrait 
+	    FROM wx_information_award_info a 
+	    LEFT JOIN wx_openid_wxno o ON a.award_openid=o.openid
+	    WHERE a.information_id=#information_id#
+	    limit 0,14
+	</select>
+	
+	<!-- 查询资讯的打赏人数 -->
+	<select id="queryRewardercounts" parameterClass="java.util.Map" resultClass="java.lang.Integer">	
+	    SELECT count(1) from 
+	    (SELECT DISTINCT o.openid,
+	    o.username,
+	    o.head_portrait 
+	    FROM wx_information_award_info a 
+	    LEFT JOIN wx_openid_wxno o ON a.award_openid=o.openid
+	    WHERE a.information_id=#information_id#) s
+	</select>
+	
+	<!--  总打赏金额 -->
+	<select id="queryRewarderSum" parameterClass="java.util.Map" resultClass="WXUserDto">
+		SELECT 
+		   sum(gold) as gold
+		 FROM 
+		    wx_information_award_info 
+		 WHERE
+		     information_id = #information_id#
+	</select>
+</sqlMap> 

@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<!-- 下面三句话，用于告诉浏览器不要缓存 -->
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="This is my page">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title></title>
+
+<!-- 引入jquery插件 -->
+<script src="javascript/jquery-1.10.2.js"></script>
+<script src="javascript/jquery-ui-1.10.4.custom.min.js"></script>
+
+<!-- 封装HTTP请求相关的方法、发送请求、获取请求的参数、字符串trim方法 -->
+<script type="text/javascript" src="javascript/httpService.js"></script>
+
+<link href="css/sec.css" type="text/css" rel="stylesheet" />
+</head>
+<style type="text/css">
+html {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	height: 99%;
+	margin: 0;
+}
+</style>
+<script type="text/javascript">
+	var tempj = -1;
+	function showed(tempi) {
+		/**
+		var p_class=$("p").attr("class"); //获取p元素的class
+		也可以用attr()方法来设置class
+		$("p").attr("class","high"); //将p元素的class设置为high
+		**/
+		//$(".cur").attr("class","nocur");
+		//$(".s_cur").attr("class","s0");
+
+		if (tempj == -1) {
+			tempj = tempi;
+		}
+
+		//$(".curopen").attr("class","curclose");
+		$(".sdown").attr("class", "sright");
+		//.eq(index) 整数，指示元素的位置（最小为 0）。
+		if (tempi == tempj
+				&& document.getElementById("show" + tempj.toString()).style.display == '') {
+			$(".sright:eq(\"" + tempi + "\")").attr("class", "sright");
+		} else if (tempi == tempj
+				&& document.getElementById("show" + tempj.toString()).style.display == 'none') {
+			$(".sright:eq(\"" + tempi + "\")").attr("class", "sdown");
+		} else if (tempi != tempj) {
+			$(".sright:eq(\"" + tempi + "\")").attr("class", "sdown");
+		}
+
+		//$(".curclose:eq(\""+ tempi +"\")").attr("class","curopen");
+
+		if (document.getElementById("show" + tempj).style.display == ''
+				&& tempi != tempj) {
+			document.getElementById("show" + tempj).style.display = 'none';
+			document.getElementById("imgshow" + tempj).src = 'images/icon02.gif';
+		}
+
+		if (document.getElementById("show" + tempi.toString()).style.display == 'none') {
+			document.getElementById("show" + tempi.toString()).style.display = '';
+			document.getElementById("imgshow" + tempi.toString()).src = 'images/icon01.gif';
+		} else {
+			document.getElementById("show" + tempi.toString()).style.display = 'none';
+			document.getElementById("imgshow" + tempi.toString()).src = 'images/icon02.gif';
+		}
+
+		tempj = tempi;
+
+	}
+	//初始化加载菜单权限
+	function init() {
+		$("#accordion").accordion();
+		sendRequest(
+				pageContextPath + "/menu/getRoleAndMenuByUserId.do",
+				{},
+				function(jsonData) {
+					var data = jsonData.data;
+					//alert(data);
+					var html = "";
+					var menuUrl = "";
+					html += "<div><img src=\"./img/nav.png\" width=\"175\" height=\"35\" style=\"display:block\" /></div>";
+					for ( var i = 0; i < data.length; i++) {
+						var children = data[i].children;
+						var imgUrl = pageContextPath + data[i].icon;
+						html += "<div onclick='javascript:showed("
+								+ i
+								+ ");'><h3 class='curclose'><img id='imgshow"+i+"' src='"+imgUrl+"' width='15' height='15'>"
+								+ data[i].text
+								+ "<s class='sright'></s></h3></div>";
+						
+						//孩子菜单
+						html += "<div id='show"+i+"' style='display:none;'>";
+						if (children != null) {
+							for ( var j = 0; j < children.length; j++) {
+								if (menuUrl == "") {
+									menuUrl = children[0].menuRUL;
+								}
+								var childMenuUrl = pageContextPath
+										+ children[j].menuRUL;
+								html += "<p onclick=\"javascript:check('"
+										+ i
+										+ j
+										+ "')\"><img src='./img/sub.png' width='4' height='7' style='margin-right:6px'><a style=\"cursor:pointer;\" onclick=\"javascript:openHtml('"
+										+ childMenuUrl + "');\" id='check" + i
+										+ j + "'>" + children[j].text
+										+ "</a></p>";
+							}
+						}
+
+						html += "</div>";
+					}
+					var menuUrl = "/information/information_list_b.html";
+					var yymenuUrl = pageContextPath + menuUrl;
+					window.parent.document.getElementById("yy").src = yymenuUrl;
+					$("#accordion").html(html);
+				});
+	}
+
+	function openHtml(url) {
+		var iframeRight = window.parent.document.getElementById("yy");
+		iframeRight.src = url;
+	}
+	var checkn = "";
+	function check(n) {
+		if (checkn == "") {
+			checkn = n;
+		}
+		document.getElementById("check" + checkn).style.color = '#333';
+		document.getElementById("check" + n).style.color = 'red';
+
+		checkn = n;
+	}
+</script>
+
+<body onload="init()">
+	<div id="accordion"></div>
+</body>
+</html>

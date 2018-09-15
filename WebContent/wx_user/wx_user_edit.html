@@ -1,0 +1,153 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>用户资料详情</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="description" content="This is my page">
+    <link href="../css/table.css" rel="stylesheet" type="text/css" />
+    <link href="../css/global.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+    <script type="text/javascript" src="../javascript/calendar.js"></script>
+    <script type="text/javascript" src="../javascript/httpService.js"></script>
+    <script type="text/javascript" src="../javascript/page.js"></script>
+    <script type="text/javascript" src="../javascript/validata.js"></script>
+    <script type="text/javascript" src="../javascript/jquery.datepick.js"></script>
+    <script type="text/javascript" src="../javascript/jquery.datepick-zh-CN.js"></script>
+    <link type="text/css" href="../css/smoothness.datepick.css" rel="stylesheet" />
+    <!-- 删除已经上传的单个文件的公共方法 -->
+    <script type="text/javascript" src="../javascript/public.js"></script>
+    <script type="text/javascript" src="../javascript/loadSelects.js"></script>
+    <script type="text/javascript" src="../javascript/toPingYin.js"></script> 
+     <script type="text/javascript" src="../javascript/window.js"></script>
+    <base target="_self">
+    
+</head>
+<script>
+var role="1";
+var openid="";
+//获取地址栏?后的参数
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return unescape(r[2]); return null;
+}
+$(function () {
+	 openid = getQueryString("openid");
+	role=getQueryString("role");
+	//为单个用户资料对象赋值
+	sendRequest(pageContextPath+"/WXuser/getUserInfoById.do",{"openid":openid},function (jsonData){
+		var user = jsonData.user;
+		$("#wxno").val(user.wxno);
+		$("#username").val(user.username);
+		$("#head_portrait").attr("src",user.head_portrait);
+		$("#sex").val(getSexName(user.sex));
+		$("#status").val(getValidName(user.status));
+		$("#telphone").val(user.telphone);
+		$("#role").val(getRole(user.role));
+		$("#age").val(user.age);
+		$("#area").val(user.country+user.province+user.city);
+		$("#gold").val(user.gold);
+		$("#got_money").val(user.got_money);
+		$("#text").val(user.text);
+		$("#can_get_money").val(user.can_get_money);
+		$("#award_count").val(user.award_count);
+		$("#information_count").val(user.information_count);
+		
+	},false);
+});	
+
+function update(t){
+	if (window.confirm("确认操作吗？")) {
+	var expert=$("#expert").val().trim();
+		if(t=='2'){
+			if ( expert== ""){
+				alert("医生名称为空");
+				$("#expert").focus();
+				return;
+			}
+
+			}
+		
+		//为单个用户资料对象赋值
+		sendRequest(pageContextPath+"/WXuser/updateWXuser.do",{"openid":openid,"role":t,"expert":expert},function (jsonData){
+			var data = jsonData.data;
+			if (data) {
+				 alert("成功");
+				 window.opener.location.reload(true);
+				//window.parent.location.reload(true);
+				window.close();
+			  }else{
+				  alert("失败!请联系管理员");
+				  }
+				
+		});
+	}
+}	 
+</script>
+ 
+<body style='overflow:scroll;overflow-x:hidden'>
+<div style="margin-bottom:10px;"><img src="../images/t.png" /><span style="font-size:18px;">用户资料详情</span></div>
+<form name="emplChangeTable" id="emplChangeTable" method="post">
+   <input type="hidden" id="openid" name="openid"/>
+<fieldset>
+    <legend ><strong>基本情况</strong></legend>
+    <table id="ChangeTable">
+    <tr><td>头像</td><td colspan="3"><img id="head_portrait" name="head_portrait" width="100px;" height="100px;"/></td></tr>
+        <tr>
+            <td>昵称</td>
+            <td><input type="text" name="username" id="username" readonly="readonly"/></td>
+                        
+            <td>角色<a style="color: red;">*</a></td>
+            <td><input type="text" name="role" id="role" readonly="readonly"/></td>
+        </tr>
+        <tr>
+            <td>性别<a style="color: red;"></a></td>
+                <td>
+               <input type="text" id="sex" name="sex" readonly="readonly"/>
+                </td>
+            <td>是否关注<a style="color: red;"></a></td>
+                <td>
+                <input type="text" id="status" name="status" readonly="readonly"/>
+                </td>
+        </tr>
+        <tr>
+         <td>年纪<a style="color: red;"></a></td>
+            <td><input type="text" id="age" name="age" readonly="readonly"/></td>
+            <td>地区<a style="color: red;"></a></td>
+            <td colspan="3"><input type="text" id="area" name="area" readonly="readonly"/></td>
+         </tr>             
+    </table>
+</fieldset>
+<div  id="zhuanjia">
+<fieldset>
+    <legend ><strong>专家信息</strong></legend>
+    <table id="ChangeTable">
+        <tr>
+            <td>用户请求验证码<a style="color: red;">*</a></td>
+                <td><input type="text" name="text" id="text" readonly="readonly"/></td>
+            <td>医生名称<a style="color: red;">*</a></td>
+                <td><input type="text" name="expert" id="expert" /></td>
+
+        </tr>
+
+        
+    </table>
+</fieldset>
+<br/>
+</div>
+    <div style="float:left; text-align:center; margin-left:300.5px;">
+
+    	<!-- <a href="#" onclick="manyFileDownLoad()"><div class="btns1" >批量下载</div></a> -->
+    	<a href="#" onclick="update('2');"><div class="btns1" >通过</div></a>
+    	<a href="#" onclick="update('1');"><div class="btns1" >不通过</div></a>
+        <a href="#" onclick="window.close()"><div class="btns1" >关闭</div></a>
+        </div>
+
+
+</form>
+</body>
+</html>

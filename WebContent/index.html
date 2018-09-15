@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<!-- 下面三句话，用于告诉浏览器不要缓存 -->
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="全泰消化专家管理系统">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<title>全泰消化专家管理系统</title>
+<!-- css样式 -->
+<style type="text/css">
+* {
+	margin: 0px;
+	border: 0px;
+}
+</style>
+
+<style type="text/css">
+html {
+	height: 100%;
+	margin: 0;
+}
+
+body {
+	height: 100%;
+	margin: 0;
+}
+</style>
+<style type="text/css">
+#box {
+	width: 500px;
+	background: #000;
+	height: 500px;
+}
+
+#content {
+	float: left;
+	width: 600px;
+	height: 600px;
+	background: red;
+}
+</style>
+<style>
+.keepbj { 
+	width: 600px;
+	height: 50px;
+	border: 1px solid #f00;
+}
+
+#div1 {
+	float: left;
+	width: 130px;
+	height: 50px;
+}
+
+#div2 {
+	float: left;
+	width: 130px;
+	height: 50px;
+}
+
+#div3 {
+	clear:both;
+	width: 130px;
+	height: 30px;
+}
+</style>
+</head>
+
+<body>
+	<!-- box的长宽都小于content的，这样：显示则被content撑开width:600px; height:600px;  
+	<div id="box">
+		<div id="content">
+		</div>
+	</div>
+	-->
+
+	<!-- box的长宽都小于content的，加上overflow:hidden，溢出部分隐藏，这样：显示则为box的width:500px; height:500px;   
+	<div id="box" style="overflow:hidden;">
+		<div id="content"></div>
+	</div>
+	-->
+	<!-- 
+	<div class='keepbj'>
+		<div id='div1'>我会在左边</div>
+		<div id='div2'>我会在右边</div>
+		<div id='div3'>我不会受float的影响。</div>
+	</div>
+ 	-->
+	
+	<!--通过iframe来页面布局 -->
+
+	<div style="height:10%">
+		<!-- iframe的src=""会去请求服务器资源 -->
+		<iframe src="s.html" height="100%" width="100%" scrolling="no"
+			frameborder="no" border="0" style="overflow:hidden;">
+		</iframe>
+	</div>
+	<div style="width:99%;height:83%;position:relative;">
+		<iframe src="Section.html" style="width:190px;height:100%;" frameborder="no" scrolling="yes">
+		</iframe>
+
+		<iframe id="yy" name="yy"
+			style="position:absolute;left:196px;width:83%;height:100%;"
+			frameborder="no"></iframe>
+	</div>
+	<div
+		style="font-size:15px;text-align:center;width:100%;height:5%;line-height:66px;font-size:20px;color:#666;background-color: #F2F9FC">
+		全泰消化专家
+	</div>
+
+</body>
+</html>

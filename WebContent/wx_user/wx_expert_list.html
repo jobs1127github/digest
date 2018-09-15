@@ -1,0 +1,212 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>专家管理</title>
+    <meta http-equiv="pragma" content="no-cache">
+    <meta http-equiv="cache-control" content="no-cache">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="description" content="This is my page">
+    <link href="../css/table.css" rel="stylesheet" type="text/css" />
+    <link href="../css/global.css" rel="stylesheet" type="text/css" />
+     <script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="../javascript/httpService.js"></script>
+    <script type="text/javascript" src="../javascript/page.js"></script>
+    <script src="../js/global.js"></script>
+    <script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+    <script type="text/javascript" src="../javascript/calendar.js"></script>
+    <script type="text/javascript" src="../javascript/window.js"></script>
+    <script type="text/javascript" src="../javascript/validata.js"></script>
+    <script type="text/javascript" src="../javascript/loadSelect.js"></script>
+    <base target="_self">
+    
+</head>
+<script >
+var group=getQueryGroup();
+
+$(function() {
+	
+});
+function queryEmplInfoBy(){
+
+	var params = $("#emplForm").serialize();
+	onloadEmplInfo(1,params);
+}
+function onloadEmplInfo(pageNo, params){
+	var url=pageContextPath+"/WXuser/getUserInfos.do";
+	sendRequest(url, "pageSize=15&pageNo="+pageNo+"&"+params, function(datas) {
+        var vJson = datas;
+    $("#table2").html("");
+   	var table2th = "";
+   	table2th+="\<tr id='headtr'\>";
+
+   	if (vJson.data==null){
+      	 $("#table2").html("\<th style='width:826px;'\>没有与之相关的用户\</th\>")
+
+          	}
+    else{
+        //序号、微信号、医生名称、可计提、已计提、发布数量、被打赏次数、认证时间、操作（审核、查看详情）
+        
+        table2th+="\<th style='width:20px;' class='td_emplName'\>序号\</th\>";
+     table2th+="\<th style='width:150px;' class='td_emplName'\>微信昵称\</th\>";
+    table2th+="\<th style='width:150px;' class='td_emplName'\>医生名称\</th\>";
+    table2th+="\<th style='width:100px;' class='td_emplSex'\>可计提金额\</th\>";
+    table2th+="\<th style='width:100px;' class='td_emplSex'\>已计提金额\</th\>";
+    table2th+="\<th style='width:84px;'   class='td_emplMail'\>发布数量\</th\>";
+    table2th+="\<th style='width:84px;'   class='td_emplMail'\>被打赏次数\</th\>";
+    table2th+="\<th style='width:84px;'   class='td_emplMail'\>认证时间\</th\>";
+   // table2th+="\<th style='width:84px;'   class='td_emplMail'\>群组\</th\>";
+    table2th+="\<th style='width:137px;' class='td_operate'\>操作\</th\>";
+    table2th+="\</tr\>";
+    var row = "";
+    if (vJson.data.length > 0) {
+            for (var i = 0; i < vJson.data.length; i++) {
+                var xuhao=(pageNo-1)*15+1+i;
+                var group_id="group_id"+i;
+             	if (i % 2 == 0) {
+                    		row += "<tr>";
+                		} else {
+                    		row += "<tr style='background-color:#f4f8f9'>";
+                		}
+             row += "<td>" +  xuhao + "</td>";
+              row += "<td>" + vJson.data[i].username + "</td>";
+               row += "<td>" +vJson.data[i].expert + "</td>";
+               row += "<td>" + vJson.data[i].can_get_money.toFixed(2) + "</td>";
+               row += "<td>" + vJson.data[i].got_money.toFixed(2) + "</td>";
+               row += "<td>" + vJson.data[i].information_count + "</td>";
+               row += "<td>" + vJson.data[i].award_count + "</td>";               
+               row += "<td>" + vJson.data[i].check_time + "</td>";     
+
+/*               row += "<td><select id='"+group_id+"'  class='select' style='width:153px;'>";
+               row+="<option value=''>--</option>";
+               
+             	if(group!=null){
+            		for(var j=0;j<group.length;j++)
+            		{
+						if(group[j].dataItem==vJson.data[i].group_id){row+="<option selected='selected' value='"+group[j].dataItem+"'>"+group[j].dataValue+"</option>";}else
+           			 	row+="<option value='"+group[j].dataItem+"'>"+group[j].dataValue+"</option>";
+            		}
+            		}
+                
+    			row += "</select></td>"; 
+*/
+    			 row +=  "<td>";
+    			if(vJson.data[i].role=="0"){               
+        			 row += "<a href='#'  style='margin-right:3px;width=4%'  class='cz' onclick='openwin2(this)' openid="+vJson.data[i].openid+  " role="+vJson.data[i].role+ ">审核</a>";
+    			}
+               // row +=   "<a href='#'  style='margin-right:3px;width=4%'  class='cz' onclick='updateGroup(this,"+i+")' openid="+vJson.data[i].openid+ ">保存</a>";
+                
+                row +=  "<a href='#'  style='margin-right:3px;width=4%'  class='cz' onclick='openwin(this)' openid="+vJson.data[i].openid+  " role="+vJson.data[i].role+ ">详细</a>";
+             row += "</td>";
+           	   row +="</tr>";
+           	   
+
+            }
+    }     
+
+    var footPage = "";
+            footPage+=	"\<tr align='right'\>";
+            footPage+=  "\<td class='pages' style='align:right;border-top:1px solid #bdd0db;' colspan='14'\>";
+            footPage+=  "\<div id='pagediv' class='fy'\>\</div\>";
+            footPage+=  "\</td\>";
+           	footPage+=	"\</tr\>"; 
+    $("#table2").html(table2th+row+footPage);
+    }
+    $("#pagediv").children().remove();
+    var pageV = new pageView("#pagediv");
+    pageV.totalCount = vJson.total;
+    pageV.index = pageNo;
+    pageV.onclick = function(index) {
+        onloadEmplInfo(index,params);
+    };
+    pageV.render(); 
+    },true);
+}
+	
+
+	
+
+
+	function chongZi(){
+        emplForm.reset();
+        window.location.href="wx_user_list.html";
+    }
+    function updateGroup(_this,id){
+        var group_id=  $("#group_id"+id).val(); 
+        
+        var openid = $(_this).attr("openid");
+    	sendRequest(pageContextPath+"/WXuser/updateEmplGroup.do", {"group_id":group_id,"openid":openid}, function(datas) {
+            var vJson = datas;
+            if(datas){alert("操作成功");
+            window.location.href="wx_expert_list.html";
+            }
+    	});
+        
+        }
+    function openwin(_this,role){
+    	var openid = $(_this).attr("openid");
+    	var role = $(_this).attr("role");
+        var winPar=window.open ("wx_user_show.html?openid="+openid+"&role="+role,"newwindow","center:yes;resizable=no;status=no;dialogheight=200px;dialogwidth=200px;");
+    	if(winPar=="refresh"){
+    		window.location.reload();		
+    	}
+    }
+    function openwin2(_this){
+    	var openid = $(_this).attr("openid");
+    	var role = $(_this).attr("role");
+        var winPar=window.open ("wx_user_edit.html?openid="+openid+"&role="+role,"newwindow","center:yes;resizable=no;status=no;dialogheight=200px;dialogwidth=200px;");
+    	if(winPar=="refresh"){
+    		window.location.reload();		
+    	}
+    }
+</script>
+<body onload="queryEmplInfoBy()">
+    <form  method="post" name="emplForm" id="emplForm">
+	<div id="hiddenDiv"></div>
+    <div class="container">
+	<div class="detail"><b></b><span>专家管理</span></div>
+        <div id="content">
+        <fieldset>
+            <div >
+                <table id="table1" style="width:100%;">
+                    <tr>
+                        <td>昵称</td>
+                        <td><input type="text" name="username" id="username" class="inp"/></td>
+                        <td>状态</td>
+                        <td><select id="role" name="role"  class="select" style="width:153px;">
+                        		<option value="A" selected="selected">--</option>
+                        		<option value="0" >待审核</option>
+                        		<option value="2">已审核</option>
+                        	</select></td>                        
+                        <td>是否关注</td>
+                        <td><select id="status" name="status"  class="select" style="width:153px;">
+                        		<option value="0" >全部</option>
+                        		<option value="Y" selected="selected">关注</option>
+                        		<option value="N">未关注</option>
+                        	</select></td>
+                    </tr>
+                    <tr>
+                        
+                    </tr>
+                </table>
+    
+             <div class="btncon">
+                    <a href="#" onclick="queryEmplInfoBy()"><div class="btns">查询</div></a>
+                    <a href="#" onclick="chongZi()"><div class="btns">重置</div></a>
+                   
+             </div>
+         	 </div>
+
+         	 </fieldset>
+        </div>
+        
+       </div>
+	         <div>
+	             <table id="table2" style="width:100%;word-break:break-all; word-wrap:break-word;">
+	             </table>
+	             
+	         </div>
+
+       </form>
+</body>
+</html>

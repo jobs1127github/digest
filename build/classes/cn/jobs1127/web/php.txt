@@ -1,0 +1,41 @@
+通过 netstat -a -o 查看端口占用情况，关闭调用相关端口的进程
+
+apache2.4 端口433对应的pid,关闭掉
+
+Apache安装：
+
+
+Apache2.4启动失败参考：
+cmd--命令端--切换到apache的bin目录，执行如下命令：httpd.exe -w -n "Apache2.4" -k start
+PS：Apache2.4为你的apache服务名称，有的为apache，以自己的为准。
+
+
+Apache2.4+php5.6搭建
+参考：http://blog.csdn.net/sinat_25926481/article/details/52471068
+电脑/服务/启动Apache
+
+
+小项目参考：D:/web_project
+项目文件直接copy放在apache/htdocs文件下
+extension_dir 在php.ini文件里
+
+PHP 在 php.ini 中已经做好了对 MySQL 的配置，所以一般无须修改。在需要自己项目里的config.php里设置数据库连接信息
+
+
+
+第一步 解压php
+第二步 简单配置PHP 在php.ini文件里extension_dir = "D:/web_project/PHP5.6/ext"
+修改php时区搜索date.timezone 修改为
+date.timezone =PRC
+
+三、在Apache中引入PHP模块
+第一步
+LoadModule php5_module "D:/web_project/PHP5.6/php5apache2_4.dll"
+PHPIniDir "D:/web_project/PHP5.6"
+AddType application/x-httpd-php .php .html .htm
+
+第二步 修改索引页
+
+<IfModule dir_module>
+    DirectoryIndex index.php index.html
+</IfModule>

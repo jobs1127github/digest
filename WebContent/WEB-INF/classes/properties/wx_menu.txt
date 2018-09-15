@@ -1,0 +1,24 @@
+{       
+    "button": [
+        {
+            "type": "view",
+            "name": "健康资讯",
+            "url": "http://www.51pharm.cn/digest/wechat/youhui.do?type=1"
+        },
+        {
+            "name": "个人中心",
+            "sub_button": [
+                {
+                    "type": "click",
+                    "name": "免费专家",
+                    "key": "customer_service"
+                },
+                {
+                    "type": "view",
+                    "name": "我@全泰",
+                    "url": "http://www.51pharm.cn/digest/wechat/youhui.do?type=3"
+                }
+            ]
+        }
+    ]
+}

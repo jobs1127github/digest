@@ -1,0 +1,9 @@
+<beans>
+	<!-- scope指定bean的生命周期或存活范围，默认为singleton,常用的为singleton单例（同一个对象）/prototype原型（每次按照原型造一新的）/Request、session、application等 -->
+	<bean id="userDAOImpl" class="cn.jobs1127.spring.small.simulation.UserDAOImpl" scope="singleton"/>
+	
+	<bean id="userServiceImpl" class="cn.jobs1127.spring.small.simulation.UserServiceImpl" >
+		<property name="userDAO" bean="userDAOImpl"/>
+		<value>haha</value> 
+	</bean>
+</beans>

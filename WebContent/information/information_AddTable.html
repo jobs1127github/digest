@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>新增资讯</title>
+
+<!-- 阻止浏览器缓存 -->
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<!-- 页面描述 -->
+<meta http-equiv="description" content="This is my page">
+
+<!-- 引入样式-->
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+
+<!-- jquery -->
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+
+<!-- HTTP请求 jQuery ajax的封装 -->
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+
+<script type="text/javascript" src="../javascript/window.js"></script>
+
+<!-- 文件上传相关的插件 start
+	基于jquery的文件上传控件，支持ajax无刷新上传，多个文件同时上传，上传进行进度显示，删除已上传文件。 -->
+<script type="text/javascript" src="../uploadify/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="../uploadify/swfobject.js"></script>
+<script type="text/javascript" src="../uploadify/jquery.uploadify.v2.1.4.js"></script>
+<script type="text/javascript" src="../uploadify/jquery.uploadify.v2.1.4.min.js"></script>
+<!-- 文件上传相关的插件 end-->
+
+<!-- kindeditor编辑器相关js start-->
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/kindeditor.js"></script>
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/lang/zh_CN.js"></script>
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/plugins/media/media.js"></script>
+<link rel="stylesheet" href="../js/lib/kindeditor-4.1.10/themes/default/default.css" type="text/css"/>
+<link rel="stylesheet" href="../js/lib/kindeditor-4.1.10/plugins/code/prettify.css" type="text/css"/>
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/kindeditor-all.js" type="text/javascript"></script>
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/plugins/code/prettify.js" type="text/javascript"></script>
+<!-- kindeditor编辑器相关js end-->
+
+</head>
+<script type="text/javascript">
+
+/**
+编辑器 参考：http://www.sucaihuo.com/js/123.html
+KindEditor 是一套开源的在线HTML编辑器，主要用于让用户在网站上获得所见即所得编辑效果，
+开发人员可以用 KindEditor 把传统的多行文本输入框(textarea)替换为可视化的富文本输入框。
+**/
+KindEditor.ready(function(K) {
+	//#editor_id编辑器显示的<textarea id="editor_id"></textarea>对应的id元素
+	$.editor = window.editor = K.create('#editor_id',
+	{
+		//上传文件时调用,指定上传文件的服务器端程序。
+		uploadJson:pageContextPath + '/information/upload.do',
+		//指定浏览远程图片的服务器端程序。
+		//fileManagerJson:pageContextPath+'/information/resourcesManage.do',
+		//true或false，true时显示浏览服务器图片功能。
+		allowImageUpload:true,//允许上传图片
+		//编辑器的宽度，可以设置px或%，比TEXTAREA输入框样式表宽度优先度高。
+		width : '100%',
+		//编辑器的高度，只能设置px，比TEXTAREA输入框样式表高度优先度高。
+		height : '500px',
+		//数据类型：Boolean 。true时过滤HTML代码，false时允许输入任何代码。
+		//filterMode:false,
+		//数据类型：Object。指定要保留的HTML标记和属性。哈希数组的key为HTML标签名，value为HTML属性数组
+		//htmlTags:{ font : ['color', 'size', 'face', '.background-color'], span : ['style'], div : ['class', 'align', 'style'], table: ['class', 'border', 'cellspacing', 'cellpadding', 'width', 'height', 'align', 'style'], 'td,th': ['class', 'align', 'valign', 'width', 'height', 'colspan', 'rowspan', 'bgcolor', 'style'], a : ['class', 'href', 'target', 'name', 'style'], embed : ['src', 'width', 'height', 'type', 'loop', 'autostart', 'quality', 'style', 'align', 'allowscriptaccess', '/'], img : ['src', 'width', 'height', 'border', 'alt', 'title', 'align', 'style', '/'], hr : ['class', '/'], br : ['/'], 'p,ol,ul,li,blockquote,h1,h2,h3,h4,h5,h6' : ['align', 'style'], 'tbody,tr,strong,b,sub,sup,em,i,u,strike' : [] },
+		//2或1或0，2时可以拖动改变宽度和高度，1时只能改变高度，0时不能拖动。
+		resizeMode:2,
+		//数据类型：Boolean。可视化模式或代码模式
+		//wyswygMode:true,
+		//afterUpload:function(){this.sync();},
+		//afterBlur:function(){this.sync();},
+		//items	配置编辑器的工具栏
+		items : ['source', '|', 'fullscreen', 'undo', 'redo', 
+		         'print', 'cut', 'copy', 'paste', 'plainpaste', 
+		         'wordpaste', '|', 'justifyleft', 'justifycenter', 
+		         'justifyright', 'justifyfull', 'insertorderedlist', 
+		         'insertunorderedlist', 'indent', 'outdent', 'subscript', 
+		         'superscript', '|', 'selectall', '-', 'title', 'fontname', 
+		         'fontsize', '|', 'textcolor', 'bgcolor', 'bold', 'italic', 
+		         'underline', 'strikethrough', 'removeformat', '|', 'image', 
+		         'flash', 'media', 'advtable', 'hr', 'emoticons', 'link', 
+		         'unlink', '|', 'about']
+		});
+	});
+
+
+	$(document).ready(function() {
+		$("#title").focus();
+		//初始化类别
+		sendRequest(pageContextPath + "/system/loadinitDatas.do", {
+			"param" : "informationType"
+		}, function(jsonData) {
+			var data1 = jsonData.data;
+			$("#information_type").empty();
+			//等价于$("#information_type").html("");
+			for ( var i = 0; i < data1.length; i++) {
+				$("#information_type").append(
+						"<option value='"+data1[i].dataItem+"'>"
+								+ data1[i].dataValue + "</option>");
+			}
+		});
+		//获取标签
+		getQueryMark("");
+		
+		//初始作者
+		sendRequest(pageContextPath + "/system/loadinitExpert.do", {},
+			function(jsonData) {
+				var data1 = jsonData.data;
+				$("#openid").empty();
+				for ( var i = 0; i < data1.length; i++) {
+					$("#openid").append(
+							"<option value='"+data1[i].dataItem+"'>"
+									+ data1[i].dataValue + "</option>");
+				}
+		});
+		
+		//初始化上传文件组件 图片上传
+		$("#uploadify").uploadify({
+			'uploader' : "../uploadify/uploadify.swf",
+			'script' : "upload/Upload",//com.tentinet.app.util.UploadServlet 调用这个servlet
+			'cancelImg' : "../uploadify/cancel.png",
+			'folder' : "uploads",//上传文件存放的路径,请保持与uploadFile.jsp中PATH的值相同
+			'progressData' : "percentage",
+			'queueId' : "fileQueue_img",
+			'queueSizeLimit' : 1,//限制上传文件的数量
+			'fileDesc' : "请选择jpg文件",
+			'fileExt' : "*.jpg",//限制文件类型 ; 'fileExt' : "*",所有类型均可,后台关闭掉对.jpg的限制
+			'auto' : true,
+			'multi' : false,//是否允许多文件上传
+			'simUploadLimit' : 1,//同时运行上传的进程数量
+			'removeCompleted' : false,
+			'buttonImg' : "../uploadify/bat.png",
+			'buttonText' : "files",
+			'scriptData' : {
+				'type' : '2' //上传图片
+			},//这个参数用于传递用户自己的参数，此时'method' 必须设置为GET, 后台可以用request.getParameter('name')获取名字的值
+			'method' : "GET",
+			'onCancel' : function() {
+			},
+			'onAllComplete' : function() {
+			},
+			'onComplete' : function(event, queueId, fileObj, response, data) {
+				$("#tile_img_url").val(response);
+			}
+		});
+		
+		//初始化上传文件组件音频上传
+		$("#Auploadify").uploadify({
+			'uploader' : "../uploadify/uploadify.swf",
+			'script' : "upload/Upload",//com.tentinet.app.util.UploadServlet 调用这个servlet
+			'cancelImg' : "../uploadify/cancel.png",
+			'folder' : "uploads",//上传文件存放的路径,请保持与uploadFile.jsp中PATH的值相同
+			'progressData' : "percentage",
+			'queueId' : "fileQueue_audio",
+			'queueSizeLimit' : 1,//限制上传文件的数量
+			'fileDesc' : "请选择mp3文件",
+			'fileExt' : "*.mp3",//限制文件类型
+			'auto' : true,
+			'multi' : false,//是否允许多文件上传
+			'simUploadLimit' : 1,//同时运行上传的进程数量
+			'removeCompleted' : false,
+			'buttonImg' : "../uploadify/bat.png",
+			'buttonText' : "files",
+			'scriptData' : {
+				'type' : '1'//上传音频
+			},//这个参数用于传递用户自己的参数，此时'method' 必须设置为GET, 后台可以用request.getParameter('name')获取名字的值
+			'method' : "GET",
+			'onCancel' : function() {
+			},
+			'onAllComplete' : function() {
+			},
+			'onComplete' : function(event, queueId, fileObj, response, data) {
+				$("#audio_url").val(response);
+			}
+		});
+	});
+</script>
+
+<script>
+	function addInformation() {
+		if ($("#title").val().trim() == "") {
+			alert("资讯名称为空");
+			$("#title").focus();
+			return;
+		}
+		if ($("#tile_img_url").val().trim() == "") {
+			alert("资讯标题图片不能为空，图片格式.jpg");
+			return;
+		}
+
+		if ($("#openid").val().trim() == "") {
+			alert("作者不能为空");
+			return;
+		}
+		alert(typeof ($('input:[name="mark"]:checked').val());
+		//判断check box 是否有选择，是否至少有一个选择
+		if (typeof ($('input:[name="mark"]:checked').val()) == "undefined") {
+			alert("标签不能为空");
+			return;
+		}
+		var content = editor.html();
+		if (content == "") {
+			alert("资讯内容不能为空");
+			return;
+		}
+		//拿到某个id对应的值$("#openid").val()，给某个id对应的值赋值：$("#content").val(content);
+		$("#content").val(content);
+		var params = $("#informationFrom").serialize();
+		sendRequest(pageContextPath + "/information/saveInformation.do",
+				params, function(jsonData) {
+					//alert(jsonData.data);
+					if (jsonData.data) {
+						alert("新增成功");
+						window.opener.location.reload(true);
+						window.close();
+					} else {
+						alert("新增失败!请联系管理员");
+					}
+		}, false);
+	}
+</script>
+
+<body style='overflow: scroll; overflow-x: hidden'>
+	<div style="margin-bottom: 10px;">
+		<img src="../images/t.png" /> <span style="font-size: 18px;">新增资讯</span>
+	</div>
+	<form id="informationFrom" name="informationFrom" method="post">
+		<input type="hidden" id="content" name="content" />
+		<div style="position: relative;">
+			<fieldset>
+				<legend>
+					<strong>资讯信息</strong>
+				</legend>
+				<table id="AddTable">
+					<tr>
+						<td>名称 <a style="color: red;">*</a></td>
+						<td><input style="width:400px;" type="text" name="title" id="title" /></td>
+					</tr>
+					<tr>
+						<td>标图<a style="color: red;">*</a></td>
+						<td>
+						<input type="hidden" id="tile_img_url" name="tile_img_url" />
+							<a style="color: red;">（请上传1:1比例的jpg格式图片）</a>
+							<div id="fileQueue_img">
+								<input type="file" name="uploadify" id="uploadify" />
+							</div>
+						</td>
+						<td>专家录音<a style="color: red;"></a></td>
+						<td>
+						<input type="hidden" id="audio_url" name="audio_url" />
+						<a style="color: red;">（请上传mp3格式音频）</a>
+							<div id="fileQueue_audio">
+								<input type="file" name="Auploadify" id="Auploadify" />
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td>内容<a style="color: red;">*</a></td>
+						<td colspan="3"><textarea id="editor_id"></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td>类别<a style="color: red;">*</a></td>
+						<td>
+						<select id="information_type" name="information_type" style="width:150px">
+						</select>
+						</td>
+						<td>作者<a style="color: red;">*</a></td>
+						<td>
+						<select id="openid" name="openid" style="width:150px">
+						</select>
+						</td>
+					</tr>
+					<tr>
+						<td>标签<a style="color: red;">*</a></td>
+						<td colspan="3" id="mark"></td>
+					</tr>
+				</table>
+			</fieldset>
+		</div>
+		<br /> <br />
+		
+		<div style="float: left; text-align: center; margin-left: 302.5px;">
+			<a href="#" onclick="addInformation()"><div class="btns1">新增</div>
+			</a> <a href="#" onclick="window.close()"><div class="btns1">关闭</div>
+			</a>
+		</div>
+	</form>
+</body>
+
+</html>

@@ -1,0 +1,36 @@
+@charset "utf-8";
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+.logo {
+	margin: 20px 0 0 28px;
+	height: 31px
+}
+
+.wel {
+	font-family: "微软雅黑";
+	width: 350px;
+	float: right;
+	height: 22px;
+	padding-top: 15px;
+	line-height: 22px;
+	color: #fff;
+}
+/**父级元素wel，在该元素里的a标签的样式*/
+.wel a:link {
+	color: red;
+	text-decoration: underline;
+	cursor: pointer;
+}
+
+.le {
+	float: left;
+	margin-right: 15px;
+}
+
+.le a:link img {
+	border: 0px;
+}

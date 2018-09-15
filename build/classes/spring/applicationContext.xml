@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:ehcache="http://www.springmodules.org/schema/ehcache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+	   
+	<!-- 读取properties 以单例的形式，把硬盘上的properties文件加载到程序内存中-->
+	<bean 
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+      <property name="locations">
+      <!--要注意eclipse和myeclipse的区别，eclipse的项目在webContent/WEB-INF/没有classes
+       	  classpath指的是build/classes --> 
+         <list>
+	         <value>classpath:properties/jdbc.properties</value>
+	         <value>classpath:properties/weixin-config.properties</value>
+         </list>
+      </property>
+	</bean>
+	
+	<!--注解交由Spring容器管理-->
+    <context:annotation-config/>
+     
+	<!--代码中那些包与那些类进行依赖注入的功能，component-scan会去扫描下面配置的包下的所有类，
+		如果发现有通过注解注释的类，比如@Component注释的，都会把其对应的类交由Spring容器管理，
+		Spring容器启动后，会通过IOC、DI进行控制反转或依赖注入该对象（实例化对象） -->
+	<context:component-scan base-package="com.tentinet.app"/>
+	<context:component-scan base-package="com.tentinet.weixin"/>
+	
+	<!-- aop方面编程相关配置 切面编程 proxy-target-class默认为true -->
+    <aop:aspectj-autoproxy proxy-target-class="true"/>
+	   
+	<!-- 资源文件绑定器 
+    <bean id="messageSource"
+          class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basename" value="message"/>
+        <property name="useCodeAsDefaultMessage" value="true"/>
+    </bean>
+    -->
+    
+    
+    <!--web.xml中的SecurityFilter中使用了该OMSSecurityFilter对象，可以在这里初始化该bean对象，
+    	这个类上如果用了@Component注解，则可以不需要在这里初始化该bean了，通过上面的 <context:component-scan
+    	也能找到该Component组件并初始化。
+    <bean id="OMSSecurityFilter" class="com.tentinet.app.util.OMSSecurityFilter"></bean>
+	-->
+	
+	<!-- 引入数据源 -->
+	<import resource="classpath:spring/dataSource.xml"/>
+	
+	<!-- 引入SqlMapClient -->
+	<import resource="classpath:spring/dataAccessContext-ibaties.xml"/> 
+	
+	<!-- 引入hibernateTemplate -->
+	<import resource="classpath:spring/dataAccessContext-hibernate.xml"/> 
+	
+	<!-- 引入xml事务管理 
+	<import resource="classpath:spring/transaction-hibernate.xml"/>
+	-->
+	<!-- Spring 上下文 -->
+	<!-- <bean id="springContextUtil" class="com.cntaiping.tpi.weixin.gs.system.SpringContextUtil"/> -->
+	  
+	</beans>

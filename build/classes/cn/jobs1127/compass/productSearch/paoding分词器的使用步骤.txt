@@ -1,0 +1,10 @@
+压缩包：paoding-analysis-2.0.4-beta.zip
+
+1、解压开后，把paoding-analysis.jar拷贝到classpath下。
+2、解压开后，把字典dic拷贝到项目的src目录下。
+3、解压开后，把paoding-dic-home.properties拷贝到src目录下，并添加如下内容：
+paoding.dic.home=classpath:dic
+
+
+如果出现 dic不是一个目录，原因是你的项目运行在一个带有空格或中文的路径：
+如：你的Tomcat安装在documents and settings项目下，那么该项目就是运行在一个带空格的或中文的路径下。

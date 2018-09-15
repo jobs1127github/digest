@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app id="WebApp_ID" version="2.4"
+	xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+	<display-name>
+		Digest_wx（微信端消化专家项目，
+		注意：Digest_wx项目名，在js里也大量的使用到了，
+		修改项目名时要注意js文件，properties文件中的项目名）。
+	</display-name>
+	
+	<!--Digest_wx.root:"webapp.root"这个字符串可以随便写任何字符串。如果不配置默认值是"webapp.root"。 -->
+	<context-param>
+		<param-name>webAppRootKey</param-name>
+		<param-value>Digest_wx.root</param-value>
+	</context-param>
+	
+	<!--context-param web容器的成员属性，上下文参数，指定spring容器的配置文件的位置
+  	   	applicationContext.xml是spring容器的配置文件，
+  	   	下面的ContextLoaderListener把web容器(web.xml)
+  	   	和spring容器（applicationContext.xml）整合在一起，web容器启动后，
+  	   	如果配置了ContextLoaderListener监听器则ContextLoaderListener会对
+  	   	applicationContext.xml配置进行初始化，默认以单例的形式实例化里的bean对象。-->
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+		<!--  classpath指的是build/classes -->
+		classpath:spring/applicationContext.xml
+		</param-value>
+	</context-param>
+
+	<!-- Log4jConfigListener监听器负责初始化该log4j.properties配置文件 -->
+	<context-param>
+		<param-name>log4jConfigLocation</param-name>
+		<param-value>classpath:properties/log4j.properties</param-value>
+	</context-param>
+	
+	
+	
+	<!-- filter相关配置开始-->
+	<!-- 
+	带递归的filter拦截器功能.
+	它使用户可以改变一个request和修改一个 response. 
+	Filter 不是一个servlet,它不能产生一个response,它能够在一个request到达servlet之前预处理request,
+	也可以在离开 servlet时处理response.
+	换种说法,filter其实是一个”servlet chaining”(servlet 链).
+	一个filter 包括:
+	1. 在servlet被调用之前截获;
+  	2. 在servlet被调用之前检查servlet request;
+  	3. 根据需要修改request头和request数据;
+  	4. 根据需要修改response头和response数据;
+  	5. 在servlet被调用之后截获.
+	如果要运行这个filter,必须去配置到web.xml中.-->
+
+
+	<!-- 通过filter修改请求的编码，统一编码，解决乱码问题 -->
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+		<init-param>
+			<param-name>forceEncoding</param-name>
+			<param-value>true</param-value>
+		</init-param>
+	</filter> 
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+
+	<!--登陆权限过滤
+	从这个配置中，可能会给我们造成一个错觉，以为DelegatingFilterProxy类就是springSecurity的入口，
+	但其实这个类位于spring-web-3.0.3.RELEASE.jar这个jar下面，
+	说明这个类本身是和springSecurity无关。
+	DelegatingFilterProxy类继承于抽象类GenericFilterBean,
+	间接地implement了javax.servlet.Filter接口，Servlet容器在启动时，
+	首先会调用Filter的init方法,
+	GenericFilterBean的作用主要是可以把Filter的初始化参数自动地set到继承于GenericFilterBean类的Filter中去。
+	
+	DelegatingFilterProxy主要作用就是一个代理模式的应用,
+	可以把servlet容器中的filter同spring容器中的bean关联起来。
+	此外还要注意一个DelegatingFilterProxy的一个初始化参数：targetFilterLifecycle,
+	其默认值为false。 
+	但如果被其代理的filter的init()方法和destroy()方法需要被调用时，
+	需要设置targetFilterLifecycle为true。-->
+	
+	<filter>
+		<filter-name>SecurityFilter</filter-name>
+		<filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+		<init-param>
+			<param-name>targetBeanName</param-name>
+			<!-- com.tentinet.app.util.OMSSecurityFilter,OMSSecurityFilter是
+			DelegatingFilterProxy代理的filter -->
+			<param-value>OMSSecurityFilter</param-value>
+		</init-param>
+		<init-param>
+			<param-name>targetFilterLifecycle</param-name>
+			<param-value>true</param-value>
+		</init-param>
+		<init-param>
+			<!-- 
+			com.tentinet.app.util.OMSSecurityFilter.init()
+			filterConfig.getInitParameter -->
+			<param-name>ExcludedUrl</param-name>
+			<param-value>/WEB-INF/excludeUrl.properties</param-value>
+		</init-param>
+	</filter>
+	<filter-mapping>
+		<filter-name>SecurityFilter</filter-name>
+		<url-pattern>*.do</url-pattern>
+	</filter-mapping>
+	
+	
+	<!--此filter过滤器尽量靠前面放,因为此filter是用于配置oscache全局缓存的,
+		如果用户再次请求时,如果在缓存中能找到就直接利用缓存里的html响应客户端,
+		以下的filter就不需要执行了(若下面还有其他的filter的话)。
+		这个全局缓存的key为请求的uri -->
+	<filter>
+        <filter-name>CacheFilter</filter-name>
+        <filter-class>com.opensymphony.oscache.web.filter.CacheFilter</filter-class>
+   		<init-param>
+   			<!--缓存时间2个小时-->
+			<param-name>time</param-name>
+			<param-value>7200</param-value>
+		</init-param>	
+		<init-param>
+			<!--缓存存储在application范围空间，如果需求存放在session范围，可以设置成session-->
+			<param-name>cacheScope</param-name>
+			<param-value>application</param-value>
+		</init-param>	
+    </filter>
+    <filter-mapping>
+        <filter-name>CacheFilter</filter-name>
+        <url-pattern>/system/*</url-pattern>
+    </filter-mapping>
+    
+	<!-- filter相关配置结束-->
+	
+ 
+	<!--listener相关配置开始-->
+	<!--IntrospectorCleanupListener Introspector内省、Cleanup清理、listener监听器
+  		1、此监听器主要用于解决java.beans.Introspector导致的内存泄漏的问题。
+  		2、此监听器应该配置在web.xml中与Spring相关监听器中的第一个位置(也要在ContextLoaderListener的前面)
+  		3、JDK中的java.beans.Introspector类的用途是检查内省Java类是否
+  		符合JavaBean规范，如果有的框架或程序用到了Introspector类,
+  		那么就会启用一个系统级别的缓存，此缓存会存放一些曾加载并分析过的JavaBean的引用。
+  		由于此缓存中存放着这些JavaBean的引用,
+  		系统级别的缓存所以垃圾回收器GC无法回收,最后导致内存变大。
+  		
+  		而org.springframework.web.util.IntrospectorCleanupListener就是专门用来
+  		处理Introspector内存泄漏问题的辅助类。
+  		IntrospectorCleanupListener会在Web服务器停止时清理Introspector缓存,
+  		使那些Javabean能被垃圾回收器正确回收。
+  		
+  		Spring自身不会出现这种问题，因为Spring在加载并分析完一个类之后会马上刷新JavaBean的Introspector缓存,
+     	这就保证Spring中不会出现这种内存泄漏的问题。
+     	但有些程序和框架在使用了JavaBean的Introspector之后,没有进行清理工作(如Quartz,Struts),
+     	最后导致内存泄漏。
+     	
+     	Quartz是一个完全由Java编写的开源任务调度的框架，通过触发器设置作业定时运行规则，
+     	 控制作业的运行时间。其中quartz集群通过故障切换和负载平衡的功能，能给调度器带来高可用性和伸缩性。
+     	 主要用来执行定时任务，如：定时发送信息、定时生成报表等等。-->
+     	 
+    <!-- Spring 刷新Introspector内省 防止内存泄露 -->
+	<listener>
+		<listener-class>org.springframework.web.util.IntrospectorCleanupListener</listener-class>
+	</listener>
+		 
+	<!-- 该监听器处理日志相关的配置 -->
+	<listener>
+		<listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+	</listener>
+
+	<!--
+		我们常用的加载context文件的方法有如下三个：
+		1、FileSystemXmlApplicationContext
+		这个方法是从文件绝对路径加载配置文件，例如：
+		ApplicationContext ctx = new FileSystemXmlApplicationContext("D:/Test/applicationcontext.xml");
+		采用绝对路径的话，程序的灵活性就很差了，所以这个方法一般不推荐。
+		
+		2、ClassPathXmlApplicationContext
+		这个方法是从classpath下加载配置文件(适合于相对路径方式加载)，例如：
+		ApplicationContext ctx = new ClassPathXmlApplicationContext("applicationcontext.xml");
+		默认的根目录是在WEB-INF/classes下面。
+		
+		3、XmlWebApplicationContext
+		专为web工程定制的方法，推荐Web项目中使用。例如：
+		ServletContext servletContext = request.getSession().getServletContext();
+		ApplicationContext ctx = WebApplicationContextUtils.getWebApplicationContext(servletContext);
+		
+		
+		public class ContextLoaderListener
+		extends ContextLoader
+		implements ServletContextListener
+		作用：在启动Web容器时，自动装配Spring applicationContext.xml的配置信息，
+		并且通过XMLWebApplicationContext对象以单例的形式初始化该配置文件中的bean。
+		
+		因为它实现了ServletContextListener这个接口，在web.xml配置这个监听器，启动容器时，
+		就会默认执行它实现的方法。在ContextLoaderListener类继承了ContextLoader这个类，
+		所以整个加载配置过程由ContextLoaderListener类来完成。
+		ContextLoaderListener继承了ContextLoader类。
+		
+		XmlWebApplicationContext是spring在web应用中的context，
+		在ContextLoaderListener中完成了初步的设置。
+		
+		XmlWebApplicationContext类实现的接口是ConfigurableWebApplicationContext;
+		ConfigurableWebApplicationContext继承的接口是WebApplicationContext;
+		WebApplicationContext继承的接口是ApplicationContext;
+		ApplicationContext继承的接口是BeanFactory。
+		这样一来spring中的所有bean都由这个XmlWebApplicationContext类来创建，并且是以单例的形式创建。
+		
+		如何部署applicationContext的xml文件?
+		如果在web.xml中不写任何参数配置信息，默认的路径是"/WEB-INF/applicationContext.xml，
+		在WEB-INF目录下创建的xml文件的名称必须是applicationContext.xml。
+		如果是要自定义文件名可以在web.xml里加入contextConfigLocation这个context参数：
+		<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+		/WEB-INF/classes/applicationContext-*.xml
+		</param-value>
+		</context-param>
+		在<param-value> </param-value>里指定相应的xml文件名，
+		如果有多个xml文件，可以写在一起并一“,”号分隔。
+		上面的applicationContext-*.xml采用通配符，
+		比如这那个目录下有applicationContext-ibatis-base.xml,applicationContext-action.xml,
+		applicationContext-ibatis-dao.xml等文件，都会一同被载入。
+		
+		BeanFactory接口负责生产Spring的bean对象，最终交由XmlWebApplicationContext类去具体实现，
+		ContextLoaderListener类(或者ContextLoaderServlet类)中初始化XmlWebApplicationContext对象,
+		由XmlWebApplicationContext负责创建Spring里的所有bean。-->
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+
+	<!-- 
+	RequestContextListener implements ServletRequestListener
+	ServletRequestListener extends EventListener
+	ServletRequestListener监听HTTP请求事件，Web服务器接收的每次请求都会通知该监听器。
+	
+	ContextLoaderListener extends ContextLoader implements ServletContextListener
+	ServletContextListener extends EventListener
+	ServletContextListener只负责监听Web容器的启动和关闭的事件。
+	
+	ContextLoaderListener(或ContextLoaderServlet)将Web容器与Spring容器整合，
+	RequestContextListener将Spring容器与Web容器结合的更加密切。
+	前者为必选配置，后者为可选配置
+  
+  	singleton:在spring IOC容器中仅存在一个Bean实例,Bean以单实例的方式存在.
+	prototype:每次从容器中调用Bean时,都返回一个新的实例,即每次调用getBean()时,相当于执行new XxxBean()的操作.
+	request:每次HTTP请求都会创建一个新的Bean,该作用域仅适用于webApplicationContext环境.
+	session:同一个HTTP请求 session共享一个Bean,不同HTTP session使用不同的Bean,该作用域仅适用于webApplicationContext环境.
+	globalSession:同一个全局session共享一个Bean,一般用于portlet应用环境,该作用域仅适用于webApplicationContext环境.
+  	
+  	
+  	在低版本的spring中,由于只有两个Bean作用域,所以采用singleton="true|false"的配置方 式,
+  	spring2.0为了向后兼容,依旧支持这种配置方式.不过,spring2.0推荐采用新的配置方式:scope="<作用域类型>"
+  	singleton作用域
+  	spring以容器的方式提供天然的单实例模式功能,任何POJO无须编写特殊的代码仅通过配置就可以了.
+  	注意:spring将Bean的默认作用域定为singleton.
+	singleton例:
+	<bean id="car" class="com.baobaotao.scope.Car" scope="singleton"/>
+	<bean id="boss1" class="com.baobaotao.scope.Boss">
+		<property name="car" ref="car"/>
+	</bean>
+  	Car Bean声明为singleton(因为默认是singleton,所以可以不显式指定).
+	在默认情况下,spring的ApplicationContext容器在启动时,自动实例化所有singleton的Bean并缓存于容器中.
+	虽然启动时会花费一些时间,但带来两个好处:首先对Bean提前的实例化操作会及早发现一些潜在的配置问题.
+	其次Bean以缓存的方式保存,当运行时使用到该Bean时就无须再实例化了,加快了运行效率.如果用户不希望在容
+	器启动时提前实例化singleton的Bean,可以通过lazy-init属性进行控制:
+  	<bean id="boos1" class="com.baobaotao.scope.Boss" lazy-init="true">
+		<property name="car" ref="car"/>
+	</bean>
+	lazy-init="true"的Bean在某些情况下依旧会提前实例化:如果该Bean被其它需要提前实例化的Bean引用到,
+	spring也将忽略延迟实例化的设置.
+	
+	prototype作用域
+	采用scope="prototype"指定非单实例作用域Bean,请看:
+	<bean id="car" class="com.baobaotao.scope.Car" scope="prototype"/>
+	<bean id="boss1" class="com.baobaotao.scope.Boss">
+		<property name="car" ref="car"/>
+	</bean>
+	<bean id="boss2" class="com.baobaotao.scope.Boss">
+		<property name="car" ref="car"/>
+	</bean>
+	boss1,boss2所引用的都是一个独立的Car实例.
+	在默认情况下,spring容器在启动时不实例化prototype的Bean.此外,spring容器将prototype的Bean交给调用
+	者后,就不再管理它的生命周期.
+	
+	web应用环境相关的Bean作用域
+	如果用户使用spring的webApplicationContext,则可以使用另外3种Bean的作用域:request,session和globalSession.不过
+	在使用这些作用域之前,首先必须在web容器中进行一些额外的配置,在高版本的web容器中,则可以利用HTTP请求监听器进行配置:
+	<web-app>
+	...
+	<listener>
+	<listener-class>
+	org.springframework.web.context.request.RequestContextListener
+	</listener-class>
+	</listener>
+	...
+	</web-app>
+  	细心的朋友可能有一个疑问:在介绍webApplicationContext初始化时,我们已经通过ContextLoaderListener将web容器与
+	spring容器整合了,为什么这里又要引入一个额外的RequestContextListener以支持Bean的另外3个作用域呢?
+	在整合spring容器时使用ContextLoaderListener,它实现了ServletContextListener监听器接口,
+	ServletContextListener 只负责监听web容器启动和关闭的事件.
+	而RequestContextListener实现ServletRequestListener监听器接口,
+	该监听器监听HTTP请求事件,web服务器接收的每一次请求都会通知该监听器.
+	spring容器启动和关闭操作由web容器的启动和关闭事件触发,
+	但如果spring容器中的Bean需要request,session,globalsession
+	作用域的支持,spring容器本身就必须获得web容器的HTTP请求事件,以HTTP请求的事件"驱动"Bean作用域的控制逻辑.
+  	
+  	request作用域
+	顾名思义,request作用域的Bean对应一个HTTP请求和生命周期,考虑下面的配置:
+	<bean name="car" class="com.baobaotao.scope.Car" scope="request"/>
+	这样,每次HTTP请求调用到car Bean时,spring容器创建一个新的Car Bean,请求处理完毕后,销毁这个Bean.
+	session作用域
+	假设将以上car的作用域调整为session类型:
+	<bean name="car" class="com.baobaotao.scope.Car" scope="session"/>
+	这样配置后,car Bean的作用域横跨整个HTTP session,session中所有HTTP请求都共享同一个Car Bean,
+	当HTTP Session结束后,实例才被销毁.
+	globalSession作用域
+	下面的配置片断将car的作用域设置为了globalSession:
+	<bean name="loginController" class="com.baobaotao.scope.Car" scope="globalSession"/>
+	globalSession作用域类似于session作用域,不过仅在portlet的web应用中使用.Portlet规范定义了全局Session概念,
+	它被组成portlet web应用的所有子portlet共享.
+	如果不在Portlet web应用环境下,globalSession自然等价于session作有域了 -->
+	
+	<listener>
+		<listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
+	</listener>
+	<!-- listener相关配置结束  -->
+	
+	
+	
+
+
+	<!-- servlet相关配置开始 -->
+	
+	<!--Initializing Spring FrameworkServlet 'spring_framework'
+		请求分发的servlet，该servlet不配置则无法发起请求 -->
+	<servlet>
+		<servlet-name>spring_framework</servlet-name>
+		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		<init-param>
+			<param-name>contextConfigLocation</param-name>
+			<param-value>/WEB-INF/spring-servlet.xml,classpath:spring/applicationContext.xml</param-value>
+		</init-param>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>spring_framework</servlet-name>
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+	
+
+	<!-- 后台登陆，随机验证码生成 对应的servlet-->
+	<servlet>
+		<servlet-name>RandomCodeServlet</servlet-name>
+		<servlet-class>com.tentinet.app.util.RandomCode</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>RandomCodeServlet</servlet-name>
+		<url-pattern>/imgcode</url-pattern>
+	</servlet-mapping>
+
+	<!-- session 测试  http://localhost:8080/Digest_wx/servlet/session/ 开始
+	<servlet>
+		<servlet-name>SessionTest</servlet-name>
+		<servlet-class>cn.jobs1127.servlet.session.SessionTest</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SessionTest</servlet-name>
+		<url-pattern>/servlet/session/SessionTest.go</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>IndexServlet</servlet-name>
+		<servlet-class>cn.jobs1127.servlet.session.IndexServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>IndexServlet</servlet-name>
+		<url-pattern>/servlet/session/IndexServlet.go</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>BuyServlet</servlet-name>
+		<servlet-class>cn.jobs1127.servlet.session.BuyServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>BuyServlet</servlet-name>
+		<url-pattern>/servlet/session/BuyServlet.go</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>ListCartServlet</servlet-name>
+		<servlet-class>cn.jobs1127.servlet.session.ListCartServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ListCartServlet</servlet-name>
+		<url-pattern>/servlet/session/ListCartServlet.go</url-pattern>
+	</servlet-mapping>-->
+	<!-- session 测试  http://localhost:8080/Digest_wx/servlet/session/ 结束-->
+
+
+
+	<!-- 图片显示servlet--> 
+	<servlet>
+		<description>This is the description of my J2EE component</description>
+		<display-name>This is the display name of my J2EE component</display-name>
+		<servlet-name>ImageGeneratorServlet</servlet-name>
+		<servlet-class>com.tentinet.app.util.ImageGeneratorServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ImageGeneratorServlet</servlet-name>
+		<url-pattern>/servlet/ImageGeneratorServlet/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- 文件下载 -->
+	<servlet>
+		<description>This is the description of my J2EE component</description>
+		<display-name>This is the display name of my J2EE component</display-name>
+		<servlet-name>FileDownServlet</servlet-name>
+		<servlet-class>com.tentinet.app.util.FileDownServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>FileDownServlet</servlet-name>
+		<url-pattern>/servlet/FileDownServlet</url-pattern>
+	</servlet-mapping>
+
+	<!-- 上传文件-->
+    <servlet>  
+    <servlet-name>upload</servlet-name>  
+    <servlet-class>com.tentinet.app.util.UploadServlet</servlet-class>   
+  	</servlet>   
+  	<servlet-mapping>   
+    <servlet-name>upload</servlet-name>   
+    <url-pattern>/information/upload/Upload</url-pattern>   
+  	</servlet-mapping> 
+
+  	<servlet>
+    <description></description>
+    <display-name>UploadServlet</display-name>
+    <servlet-name>UploadServlet</servlet-name>
+    <servlet-class>com.tentinet.app.util.UploadServlet</servlet-class>
+  	</servlet>
+  	<servlet-mapping>
+    <servlet-name>UploadServlet</servlet-name>
+    <url-pattern>/UploadServlet</url-pattern>
+  	</servlet-mapping> 
+	<!-- servlet相关配置结束-->
+	
+	
+	
+	
+	<session-config>
+		<session-timeout>30</session-timeout>
+	</session-config>
+	
+	<welcome-file-list>
+		<welcome-file>login.html</welcome-file>
+	</welcome-file-list>
+</web-app>

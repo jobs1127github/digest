@@ -1,0 +1,5 @@
+项目中使用全文检索Lucene，可以compass项目demo案例，在项目中主要实现如何实现Lucene并把compass框架
+集成到Spring中。让compass的事务由Spring的事务管理。
+
+一般情况：在保存一个实体bean到数据库时，也同时需要把该实体bean保存到索引document文档中，他们需要在同一个事务中
+才能实现要么同时完成，要么同时不完成。故需要集成compass到Spring。

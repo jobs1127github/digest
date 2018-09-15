@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMapConfig PUBLIC "-//iBATIS.com//DTD SQL Map Config 2.0//EN"
+    "http://www.ibatis.com/dtd/sql-map-config-2.dtd">
+
+<sqlMapConfig>
+	<settings enhancementEnabled="true" maxTransactions="128"
+		maxRequests="512" maxSessions="128" useStatementNamespaces="true" />
+	<sqlMap resource="ibaties/systemConfig.xml" />
+	<sqlMap resource="ibaties/role.xml" />
+	<sqlMap resource="ibaties/wx-user-config.xml" />
+	<sqlMap resource="ibaties/wx-information-config.xml" />
+	<sqlMap resource="ibaties/wxService.xml" />
+	<sqlMap resource="ibaties/wx-group-config.xml" />	
+	<sqlMap resource="ibaties/wx-report-config.xml" />
+	<sqlMap resource="ibaties/wx-area-config.xml" />	
+</sqlMapConfig>

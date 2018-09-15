@@ -1,0 +1,22 @@
+先总结造成的原因：
+        1、jdk安装的路径在C:\Program Files下面，文件夹名称中间有空格，导致路径无法识别。
+        2、安装文件存放路径中包涵中文字符，导致路径无法识别。
+        3、jdk版本问题 fmw_12.1.3.0.0_wls.jar(jdk1.7)
+
+具体是先到windows开始——>运行（ps：或则windows窗口键+R键），输入cmd，进入命令框
+
+
+进入到存放Weblogic安装文件的目录，进行如下操作：
+进入安装目录后输入java -jar 项目安装文件名称.jar（ps：注意这里运行的前提是jdk安装完成，然后环境变量配置完成！）
+
+
+参考：http://www.mamicode.com/info-detail-468724.html
+
+安装与配置：http://www.mamicode.com/info-detail-468724.html
+
+weblogic工作域：D:\Oracle\Middleware\Oracle_Home\user_projects\domains\base_domain
+双击：startWebLogic.cmd启动weblogic,登陆名：weblogic密码：jobs1226
+
+访问：http://localhost:7001/console/   登陆名：weblogic密码：jobs1226
+
+部署war：http://blog.csdn.net/md_shmily92/article/details/45363617

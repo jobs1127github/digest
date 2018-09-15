@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="role">
+	<typeAlias alias="roleVo" type="com.tentinet.app.bean.RoleVo" />
+	<typeAlias alias="userRoleDto" type="com.tentinet.app.bean.dto.UserRoleDto" />
+	<!-- 查询角色的列表信息 -->
+	<select id="queryRoleInfos" parameterClass="java.util.Map"
+		resultClass="roleVo">
+		select role_id,
+		role_status,
+		memo,
+		role_name,
+		created_by,
+		updated_by,
+		created_time,
+		updated_time
+		from t_role where 1=1
+		<isNotEmpty property="role_id" prepend="and">
+			role_id like
+			#role_id#
+		</isNotEmpty>
+		<isNotEmpty property="role_name" prepend="and">
+			role_name like
+			#role_name#
+		</isNotEmpty>
+		<isNotEmpty property="role_status" prepend="and">
+			role_status =
+			#role_status#
+		</isNotEmpty>
+		order by updated_time desc
+	</select>
+	<!-- 查询角色的数量-->
+	<select id="queryRoleCounts" parameterClass="java.util.Map" resultClass="java.lang.Integer">
+	  select count(1) from t_role where 1=1 
+		<isNotEmpty property="role_id" prepend="and">
+			role_id like
+			#role_id#
+		</isNotEmpty>
+		<isNotEmpty property="role_name" prepend="and">
+			role_name like
+			#role_name#
+		</isNotEmpty>
+		<isNotEmpty property="role_status" prepend="and">
+			role_status =
+			#role_status#
+		</isNotEmpty>
+	</select>
+
+	<delete id="deleteRoleMenuByRoleId" parameterClass="java.util.Map">
+	  delete from t_role_menu where 1=1 and role_id=#roleId#
+	</delete>
+
+	<!-- 逻辑删除角色信息 -->
+	<update id="deleteRoleById" parameterClass="java.util.Map"> 
+	    update t_role set role_status='N' where role_id=#role_id#
+	</update>
+
+	<!-- 批量删除角色信息 -->
+	<update id="deleteBatchRoleInfos" parameterClass="java.util.Map">
+	   update t_role set role_status='N' where 1=1 and role_id in
+	   <iterate property="roldIds" conjunction="," open="(" close=")">
+			#roldIds[]#
+		</iterate>
+	</update>
+	<!-- 查询有效角色并生成下拉 -->
+	<select id="loadRolesinitDatas" resultClass="roleVo">
+		select role_id as
+		role_id,role_name as role_name from t_role where 1=1 and
+		role_status='Y'
+	</select>
+
+
+
+
+
+
+
+</sqlMap>

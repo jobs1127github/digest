@@ -1,0 +1,71 @@
+@charset "utf-8";/**设置该文件的编码*/
+
+/**html选择器 定义 直接用HTML标签来定义css 该css修饰body标签，这个body标签里的内容受影响**/
+body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	/**定义一个背景 用一个图片，刚好覆盖一个背景*/
+	background: url(../images/bg.gif);/*   ../ 表示根目录      */
+	background-color: #043566;
+	background-size: cover; /*background-size是css3中新增的属性,background-size的cover特定值会保持图像本身的宽高比例,将图片缩放到正好完全覆盖定义背景的区域。**/
+	font-size: 14px;
+	font-family: "宋体";
+	
+	/**除去滚动条，隐藏滚动条*/
+	scroll:no;
+	overflow: hidden;
+}
+
+/**类选择器 定义 使用时:class="main" **/
+.main {
+	width: 313px;
+	height: 378px;
+	padding: 55px 0 0 415px;/**某个元素里的内边距*/
+	position: absolute;/**位置为绝对*/
+	top: 222px;
+	left: 300px;
+	background: url(../images/login_bg.png) no-repeat;/**no-repeat不重复*/
+}
+
+.logo {
+	width: 266px;
+	height: 36px; /* background:url(../images/logo1.png) */
+	no-repeat;
+}
+
+form {
+	width: 235px;
+	height: 200px;
+	margin: 30px 0 0 25px;
+	color: #22508e;
+	font-weight: bold;/**对文字的修饰，粗体显示*/
+}
+
+.mar {
+	margin-bottom: 20px;
+}
+
+input {
+	height: 22px;
+	font-weight: bold;/**对文字的修饰，粗体显示*/
+}
+/**
+css中no-repeat一般用在元素backgroud-repeat的设置中，含义为不平铺；
+ 一般与background-image 一起使用； 此图片做背景时不平铺； 如果平铺会出现好几张图片的情况
+ 另外还有几个其他值： repeat:平铺 repeat-x:横向平铺 repeat-y:纵向平铺
+**/
+.btn {
+	width: 100px;
+	height: 39px;
+	margin-right: 30px;
+	background: url(../images/btn.png) no-repeat;
+	border: none;
+}
+
+.btn1 {
+	width: 100px;
+	height: 39px;
+	background: url(../images/btn5.png) no-repeat;
+	border: none;
+}

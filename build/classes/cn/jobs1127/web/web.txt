@@ -1,0 +1,33 @@
+常用的web服务器：
+IIS
+Apache（静态网页 html 装插件可以跑php）
+Tomcat（动态网页 jsp sevlet）是jsp/serlet的容器
+Jboss（动态网页 jsp sevlet）
+weblogic（D:\soft_ware\weblogic通俗的讲weblogci是一种web容器，如果你知道apache，tomcat，iis你就应该知道，就是把我们开发的java应用程序运行起来，并提供服务的一种程序。）
+
+动态网页技术（根据用户请求不同的需要，展示不同的结果）
+1、ASP （active server page）
+2、JSP （Java server page）/Sevlet（服务器端的小程序，用来完成B/S框架下，客户端请求的响应处理） 
+3、PHP （personal home page）
+
+
+J2ee开发主要是浏览器(B)和服务器(S)进行交互的一种结构.逻辑都是在后台进行处理,然后再把结果传输回给浏览器
+
+WebLogic更加强大，是商业软件里排名第一的容器（JSP、servlet、EJB等）
+
+Tomcat只能算Web Container，是官方指定的JSP&Servlet容器。只实现了JSP/Servlet的相关规范，不支持EJB（硬伤啊）!不过Tomcat配合jboss和apache可以实现j2ee应用服务器功能
+在功能强大和扩展性和可用性等方面WLS比Tomcat好很多
+
+
+通过 netstat -a -o 查看端口占用情况，关闭调用相关端口的进程
+
+Apache2.4启动失败参考：
+cmd--命令端--切换到apache的bin目录，执行如下命令：httpd.exe -w -n "Apache2.4" -k start；
+PS：Apache2.4为你的apache服务名称，有的为apache，以自己的为准。
+
+Apache2.4+php5.6搭建
+http://blog.csdn.net/sinat_25926481/article/details/52471068
+
+
+
+

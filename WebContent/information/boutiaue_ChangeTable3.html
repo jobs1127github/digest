@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>更新精品资讯</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+<meta http-equiv="description" content="This is my page">
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script type="text/javascript" src="../javascript/validata.js"></script>
+<script type="text/javascript" src="../javascript/jquery.datepick.js"></script>
+<script type="text/javascript"
+	src="../javascript/jquery.datepick-zh-CN.js"></script>
+<link type="text/css" href="../css/smoothness.datepick.css"
+	rel="stylesheet" />
+<!-- 删除已经上传的单个文件的公共方法 -->
+<script type="text/javascript" src="../javascript/public.js"></script>
+<script type="text/javascript" src="../javascript/loadSelects.js"></script>
+<script type="text/javascript" src="../javascript/toPingYin.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+
+
+<link href="../uploadify/uploadify.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="../uploadify/jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="../uploadify/swfobject.js"></script>
+<script type="text/javascript"
+	src="../uploadify/jquery.uploadify.v2.1.4.min.js"></script>
+
+
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/kindeditor.js"></script>
+<script charset="utf-8" src="../js/lib/kindeditor-4.1.10/lang/zh_CN.js"></script>
+<script src="../js/lib/layer-v2.1/layer/layer.js"></script>
+<script src="../js/common.js"></script>
+<base target="_self">
+</head>
+<script>
+	/*
+	获取地址栏?后的参数,
+	如：boutiaue_ChangeTable.html?information_id=19e38918-0ca5-49ea-bd2f-e523ce79c556
+	则返回19e38918-0ca5-49ea-bd2f-e523ce79c556
+	*/
+	function getQueryString(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+		var r = window.location.search.substr(1).match(reg);
+		if (r != null)
+			return unescape(r[2]);
+		return null;
+	}
+	$(function() {
+		var information_id = getQueryString("information_id");
+		$("#information_id").val(information_id);
+		sendRequest(pageContextPath + "/boutique/queryBoutiqueById.do", {
+			"information_id" : information_id
+		}, function(jsonData) {
+			var data = jsonData.data;
+			$("#title").val(data.title);
+			$("#tile_img_url").val(data.title_img_url);
+			$("#content_url").val(data.content_url);
+			$("#status").val(data.status);
+			$("#boutique_img_url").attr("src", data.title_img_url);
+			if (data.headline == "Y") {
+				//名字为headline的input有两个，为2个radio,$("input[name='headline']").eq(0)指第一个
+				$("input[name='headline']").eq(0).attr("checked", "checked");
+			}
+		}, false);
+	});
+
+	function updateInformation() {
+	alert('aa');
+		if ($("#title").val().trim() == "") {
+			alert("资讯名称为空");
+			$("#title").focus();
+			return;
+		}
+		if ($("#content_url").val().trim() == "") {
+			alert("资讯连接为空");
+			$("#content_url").focus();
+			return;
+		}
+		var params = $("#informationFrom").serialize();
+		sendRequest(pageContextPath + "/boutique/updateBoutiques.do", params,
+				function(jsonData) {
+					if (jsonData.data == 1) {
+						alert("修改成功");
+						window.opener.location.reload(true);
+						window.close();
+					} else {
+						alert("修改失败!请联系管理员");
+					}
+				}, false);
+	}
+</script>
+
+<body style='overflow: scroll; overflow-x: hidden'>
+	<div style="margin-bottom: 10px;">
+		<img src="../images/t.png" /> <span style="font-size: 18px;">新增资讯</span>
+	</div>
+	<form id="informationFrom" name="informationFrom" method="post">
+		<input type="hidden" name="information_id" id="information_id" /> 
+		<input type="hidden" name="status" id="status" />
+		
+		<div style="position: relative;">
+			<fieldset>
+				<legend>
+					<strong>资讯信息</strong>
+				</legend>
+				<table id="AddTable">
+					<tr>
+						<td>是否头条<a style="color: red;">*</a></td>
+						<td>
+						<input type="radio" name="headline" value="Y" />是 
+						<input
+							type="radio" name="headline" value="N" checked="checked" /> 否
+						</td>
+					</tr>
+					<tr>
+						<td>资讯名称<a style="color: red;">*</a></td>
+						<td><input style="width: 400px;" type="text" name="title"
+							id="title" /></td>
+					</tr>
+					<tr>
+						<td>标题图片<a style="color: red;"></a>
+						</td>
+						<td><img src="" id="boutique_img_url"
+							style="height: 50px;width: 64px;" /> 
+							
+							<input type="hidden"
+							id="title_img_url" name="title_img_url" />
+							<div id="fileQueue">
+								<input type="file" name="uploadify" id="uploadify" />
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td>资讯连接<a style="color: red;">*</a></td>
+						<td><input style="width: 400px;" type="text"
+							name="content_url" id="content_url" /></td>
+					</tr>
+				</table>
+			</fieldset>
+		</div>
+		<br /> <br />
+		<div style="float: left; text-align: center; margin-left: 302.5px;">
+			<a href="#" onclick="updateInformation()"><div class="btns1">保存</div>
+			</a> <a href="#" onclick="window.close()"><div class="btns1">关闭</div>
+			</a>
+		</div>
+	</form>
+</body>
+<script type="text/javascript">
+	$(document).ready(function() {
+		//<input type="file" name="uploadify" id="uploadify" />这个对应的id
+		$("#uploadify").uploadify({
+			'uploader' : "../uploadify/uploadify.swf",
+			'script' : "upload/Upload",
+			'cancelImg' : "../uploadify/cancel.png",
+			'folder' : "uploads",//上传文件存放的路径,请保持与uploadFile.jsp中PATH的值相同
+			'progressData' : "percentage",
+			'queueId' : "fileQueue",
+			'queueSizeLimit' : 1,//限制上传文件的数量
+			'fileDesc' : "请选择jpg文件",
+			'fileExt' : "*.jpg",//限制文件类型
+			'auto' : true,
+			'multi' : false,//是否允许多文件上传
+			'simUploadLimit' : 1,//同时运行上传的进程数量
+			'removeCompleted' : true,
+			'buttonImg' : "../uploadify/bat.png",
+			'buttonText' : "files",
+			'scriptData' : {
+				'type' : '2'
+			},//这个参数用于传递用户自己的参数，此时'method' 必须设置为GET, 后台可以用request.getParameter('name')获取名字的值
+			'method' : "GET",
+			'onCancel' : function() {
+			},
+			'onAllComplete' : function() {
+			},
+			'onComplete' : function(event, queueId, fileObj, response, data) {
+				$("#title_img_url").val(response);
+				$("#boutique_img_url").attr("src", response);
+			}
+		});
+	});
+</script>
+</html>

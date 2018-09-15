@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="information">
+	<typeAlias alias="InformationVo" type="com.tentinet.app.bean.InformationVo" />
+	<typeAlias alias="MarkVo" type="com.tentinet.app.bean.MarkVo" />
+	<typeAlias alias="InformationDto" type="com.tentinet.app.bean.dto.InformationDto" />
+	<typeAlias alias="boutiqueVo" type="com.tentinet.app.bean.BoutiqueVo" />
+	<typeAlias alias="Plan" type="com.tentinet.app.bean.Plan" />
+	<typeAlias alias="PlanDTO" type="com.tentinet.app.bean.dto.PlanDTO" />
+	<typeAlias alias="WxClient" type="com.tentinet.app.bean.WxClient" />
+	<typeAlias alias="WxMailList" type="com.tentinet.app.bean.WxMailList" />
+	
+	<!-- 查询资讯列表,利用ibaties把查询出来的字段封装成 resultClass对应的对象-->
+	<select id="queryInformationInfos" parameterClass="java.util.Map"
+		resultClass="InformationDto">
+		SELECT  
+			i.information_id,
+			i.title,
+			i.tile_img_url,
+			i.introduce,
+			i.keywords,
+			i.content,
+			i.audio_url,
+			i.openid,
+			i.status,
+			i.information_type,
+			i.mark,
+			i.best_flag,
+			i.created_by,
+			i.created_time,
+			i.updated_by,
+			i.updated_time,
+			(select u.expert from wx_openid_wxno u where u.openid=i.openid) expert,
+			<!-- DATE_FORMAT(i.created_time,'%Y-%m-%d %H:%i:%s') created_time,
+			(SELECT mark_name FROM wx_information_mark t WHERE t.mark_code=i.`mark`) AS mark_name, -->
+			(SELECT t_data_value FROM t_data_dictionary t WHERE t.t_data_type='informationType' AND t.t_data_item=i.information_type) information_name,
+			(SELECT SUM(t.gold) FROM wx_information_award_info t WHERE t.information_id=i.information_id) award_money,
+			(SELECT t.browse_count FROM wx_information_browse_count t WHERE t.information_id=i.information_id) browse_count,
+			(SELECT t.share_count FROM wx_information_share_count t WHERE t.information_id=i.information_id) share_count
+		FROM
+		  wx_information i
+		WHERE 1=1
+		  <isNotEmpty property="best_flag" prepend="and">
+		      i.best_flag LIKE  #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="title" prepend="and">
+		      i.title LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.mark like #mark#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.status=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		     i.openid =  #openid#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.status in('3','4')
+		  </isNotEmpty>
+		  
+  		order by updated_time desc
+	</select>
+	<!-- 查询资讯的数量 -->
+	<select id="queryInformationCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1) FROM
+		  wx_information i
+		WHERE 1=1
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="best_flag" prepend="and">
+		      i.`best_flag` LIKE  #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		    i.`openid` =  #openid#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>		  
+	</select>
+	
+	<!-- 查询标签的详情 -->
+	<select id="queryMarkVoInfo" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT DISTINCT m.mark_code,m.mark_name
+		FROM wx_information_mark m,wx_user_mark u 
+		WHERE  FIND_IN_SET(m.mark_code, u.str_mark) > 0 
+		and u.openid= #openId#
+	</select>
+	<!-- 查询标签的详情 -->
+	<select id="queryInfoMarkVoInfo" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT  m.mark_code,
+		m.mark_name 
+		FROM wx_information_mark m,
+		wx_information i 
+		WHERE FIND_IN_SET(concat(m.mark_code,'/'), i.mark)>0
+		  <isNotEmpty property="information_id" prepend="and">
+		      i.information_id=#information_id#
+		  </isNotEmpty>
+	</select>
+	<!-- 查询所有标签的详情 -->
+	<select id="queryAllMarkVoInfo" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT DISTINCT m.mark_code,m.mark_name
+		FROM wx_information_mark m 
+		ORDER BY CAST(mark_code AS SIGNED) 
+	</select>
+	<!-- 查询所有分类的详情 -->
+	<select id="queryAllType" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT t_data_item AS mark_code,
+		t_data_value AS mark_name		
+		FROM t_data_dictionary
+		WHERE t_data_type='informationType'
+		ORDER BY CAST(mark_code AS SIGNED) 
+	</select>
+	<!-- 查询标签的数量 -->
+	<select id="queryMarkVoCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT COUNT(1) 
+		FROM wx_information_mark m,wx_user_mark u 
+		WHERE 1=1
+		  <isNotEmpty property="openid" prepend="and">
+		      u.str_mark=m.mark_code AND u.openid=#openid#
+		  </isNotEmpty>
+	</select>
+	
+	<!-- 前台查询资讯列表 -->
+	<select id="queryInformations" parameterClass="java.util.Map"
+		resultClass="InformationDto">
+		SELECT  
+			i.information_id,
+			i.title,
+			i.tile_img_url,
+			i.information_type,
+			i.mark,
+			i.created_time,
+			(SELECT u.expert FROM wx_openid_wxno u WHERE u.openid=i.openid) AS expert,
+			(SELECT t_data_value FROM t_data_dictionary t WHERE t.t_data_type='informationType' AND t.t_data_item=i.`information_type`)  AS information_name,
+			 (SELECT COUNT(1) FROM  wx_information_award_info t WHERE t.information_id=i.information_id)  AS share_count,
+			IFNULL((SELECT t.browse_count FROM wx_information_browse_count t WHERE t.information_id=i.information_id),0) AS browse_count
+		FROM
+		  wx_information i
+		WHERE 1=1 and i.status='3' 
+		  <isNotEmpty property="title" prepend="and">
+		     i.`title` like #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty> 
+		  <isNotEmpty property="information_type" prepend="and">
+		     i.`information_type`=#information_type#
+		  </isNotEmpty>
+		  <isNotEmpty property="best_flag" prepend="and">
+		     i.`best_flag` = #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		     i.openid = #openid#
+		  </isNotEmpty>
+		  <dynamic prepend="ORDER BY">
+   			<isNotEmpty property="orderby">
+			    $orderby$
+			</isNotEmpty>
+  		</dynamic>
+  		limit $beginnum$,10;
+	</select>
+	
+	
+	
+	<select id="queryInformationsCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT COUNT(1) 
+		FROM
+		  wx_information i
+		WHERE 1=1 and i.status='3'
+		  <isNotEmpty property="title" prepend="and">
+		     i.`title` like #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		     i.openid = #openid#
+		  </isNotEmpty>
+		  <isNotEmpty property="best_flag" prepend="and">
+		     i.`best_flag` = #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="information_type" prepend="and">
+		     i.`information_type`=#information_type#
+		  </isNotEmpty>
+	</select>
+	<!-- 前台查询资讯详情 -->
+	<select id="queryInformationDto" parameterClass="java.util.Map"
+		resultClass="InformationDto">
+		SELECT  
+			i.information_id,
+			i.title,
+			i.audio_url,
+			i.introduce,
+			i.tile_img_url,
+			i.content,
+			i.openid,
+			i.mark,
+			i.created_time,
+			(SELECT u.expert FROM wx_openid_wxno u WHERE u.openid=i.openid) AS expert,
+			(SELECT t_data_value FROM t_data_dictionary t WHERE t.t_data_type='informationType' AND t.t_data_item=i.`information_type`)  AS information_name,
+			(SELECT COUNT(1) FROM  wx_information_award_info t WHERE t.information_id=i.information_id) AS award_money,
+			(SELECT t.browse_count FROM wx_information_browse_count t WHERE t.information_id=i.information_id) AS browse_count
+
+		FROM
+		  wx_information i
+		  where i.information_id=#information_id#
+	</select>
+	<!-- 查询精品资讯列表 -->
+	<select id="boutiqueInfos" parameterClass="java.util.Map"
+		resultClass="boutiqueVo">
+		SELECT information_id,title,title_img_url,content_url,status,
+		created_by,created_time,updated_by,updated_time,headline FROM
+		  wx_information_boutique i 
+		WHERE 1=1
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>	
+  		order by updated_time desc
+	</select>
+	<!-- 查询精品资讯的数量 -->
+	<select id="boutiqueInfosCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1) FROM
+		  wx_information_boutique i 
+		WHERE 1=1
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>	
+	</select>
+	<!-- 查询今日对应openid是否有浏览对应information -->
+	<select id="findBrowseInfo" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1) FROM wx_information_browse_info 
+		WHERE information_id=#information_id#
+		AND browser_openid=#openid#
+		AND TO_DAYS(browse_time)=TO_DAYS(#browse_time#)
+		
+	</select>
+	
+	<!-- 精品头条 -->
+	<select id="queryTittleBoutique" parameterClass="java.util.Map"
+		resultClass="boutiqueVo">
+		SELECT information_id,
+		title,
+		title_img_url,
+		content_url 
+		FROM wx_information_boutique 
+		WHERE headline='Y' 
+		and status='3'
+		ORDER BY updated_time desc
+		limit 0,1
+	</select>
+	<!-- 精品资讯 -->
+	<select id="queryBoutique" parameterClass="java.util.Map"
+		resultClass="boutiqueVo">
+		SELECT information_id,
+		title,
+		title_img_url,
+		content_url
+		FROM wx_information_boutique 
+		WHERE headline='N' 
+		and status='3'
+		ORDER BY updated_time DESC
+		LIMIT 0,10
+	</select>
+	
+	
+	
+	<!-- 查询流向 -->
+	<select id="queryPlans" parameterClass="java.util.Map" resultClass="Plan">
+		SELECT
+		id id,
+		year year,
+		mouth mouth,
+		dataer dataer,
+		mgr mgr,
+		daqu daqu,
+		space ,
+		city ,
+		county ,
+		sdate ,
+		commercial1 ,
+		judge ,
+		terminal ,
+		zhenghe_qs ,
+		fenbu ,
+		product ,
+		pack ,
+		count ,
+		scount ,
+		xsScount ,
+		pihao ,
+		terminaltype ,
+		terminallev ,
+		demo ,
+		mode ,
+		zhongbiaojiamoney ,
+		peisonglv ,
+		kaipiaojiamoney ,
+		money1 ,
+		money3 ,
+		money4 ,
+		money5 ,
+		province ,
+		xieyizhuangtai ,
+		client ,
+		daibiao ,
+		shoukuangren ,
+		kaihuhang ,
+		zhanghao ,
+		kaipiaofangshi ,
+		basic1 ,
+		kaifa5 ,
+		kaifaMgr ,
+		status1 ,
+		status5 ,
+		zhangdan1 ,
+		piaoju3 ,
+		status3 ,
+		dabiao4 ,
+		status4 ,
+		totalmoney ,
+		feiyonglv ,
+		atsum ,
+		yingyumoney ,
+		yinyukaiguan ,
+		cuxiao_ed_money ,
+		jsmode ,
+		clientpolicyId ,
+		today ,
+		moneybill1 ,
+		tidanfangshi ,
+		policystatus ,
+		status8 ,
+		statusMgr ,
+		moneyMgr ,
+		money6 ,
+		status6 ,
+		tichengbelong ,
+		daquTcMan ,
+		zgTcMan ,
+		gxTcMan ,
+		danwitichen ,
+		shijiticheng ,
+		spaceZLDanwei ,
+		spaceZLTc ,
+		spaceKouJian ,
+		spaceKouJianTc ,
+		gaoJieDanwei ,
+		gaoJieTc ,
+		gxDanwei ,
+		gxTc ,
+		zgDanwei ,
+		zgTc ,
+		zgDanwei_zl ,
+		zgTc_zl ,
+		jicengbutie7 ,
+		money7 ,
+		daquZLDanwei ,
+		daquZLTc ,
+		daquKouJian ,
+		daquKouJianTc ,
+		jianli ,
+		tcstatus ,
+		money8 ,
+		thenMgr ,
+		status7 ,
+		focusonFlag ,
+		goodFriendFlag ,
+		mtime 
+		FROM kdb_nss_log_plans WHERE 1=1 and judge = '纯销'
+		and <![CDATA[STR_TO_DATE(sdate,'%Y/%m/%d') >= STR_TO_DATE(#stime#,'%Y/%m/%d')]]>
+		and <![CDATA[STR_TO_DATE(sdate,'%Y/%m/%d') <= STR_TO_DATE(#etime#,'%Y/%m/%d')]]>
+		
+		<isNotEmpty property="client" prepend="and">
+			client = #client#
+		</isNotEmpty>
+		<isNotEmpty property="daibiao" prepend="and">
+			daibiao = #daibiao#
+		</isNotEmpty>
+		<isNotEmpty property="terminal" prepend="and">
+			terminal like '%$terminal$%'
+		</isNotEmpty>
+		
+		<isNotEmpty property="products" prepend="and">
+		 	product in
+		 	<iterate property="products" open="(" close=")" conjunction=",">
+				#products[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="provinces" prepend="and">
+		 	province in
+		 	<iterate property="provinces" open="(" close=")" conjunction=",">
+				#provinces[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="citys" prepend="and">
+		 	city in
+		 	<iterate property="citys" open="(" close=")" conjunction=",">
+				#citys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="countys" prepend="and">
+		 	county in
+		 	<iterate property="countys" open="(" close=")" conjunction=",">
+				#countys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="terminals" prepend="and">
+		 	terminal in
+		 	<iterate property="terminals" open="(" close=")" conjunction=",">
+				#terminals[]#
+			</iterate>
+		</isNotEmpty>
+	</select>
+	
+	<!-- 查询费用 f1-->
+	<select id="queryPlansF1" parameterClass="java.util.Map" resultClass="PlanDTO">
+		SELECT
+		status1 status ,
+		money1 money
+		FROM kdb_nss_log_plans WHERE 1=1 and judge = '纯销'
+		and client = #client#
+		and year = #year#
+		<isNotEmpty property="provinces" prepend="and">
+		 	province in
+		 	<iterate property="provinces" open="(" close=")" conjunction=",">
+				#provinces[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="citys" prepend="and">
+		 	city in
+		 	<iterate property="citys" open="(" close=")" conjunction=",">
+				#citys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="countys" prepend="and">
+		 	county in
+		 	<iterate property="countys" open="(" close=")" conjunction=",">
+				#countys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="terminals" prepend="and">
+		 	terminal in
+		 	<iterate property="terminals" open="(" close=")" conjunction=",">
+				#terminals[]#
+			</iterate>
+		</isNotEmpty>
+	</select>
+	<!-- 查询费用 f3-->
+	<select id="queryPlansF3" parameterClass="java.util.Map" resultClass="PlanDTO">
+		SELECT
+		status3 status ,
+		money3 money
+		FROM kdb_nss_log_plans WHERE 1=1 and judge = '纯销'
+		and client = #client#
+		and year = #year#
+		<isNotEmpty property="provinces" prepend="and">
+		 	province in
+		 	<iterate property="provinces" open="(" close=")" conjunction=",">
+				#provinces[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="citys" prepend="and">
+		 	city in
+		 	<iterate property="citys" open="(" close=")" conjunction=",">
+				#citys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="countys" prepend="and">
+		 	county in
+		 	<iterate property="countys" open="(" close=")" conjunction=",">
+				#countys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="terminals" prepend="and">
+		 	terminal in
+		 	<iterate property="terminals" open="(" close=")" conjunction=",">
+				#terminals[]#
+			</iterate>
+		</isNotEmpty>
+	</select>
+	<!-- 查询费用 f4-->
+	<select id="queryPlansF4" parameterClass="java.util.Map" resultClass="PlanDTO">
+		SELECT
+		status4 status ,
+		money4 money
+		FROM kdb_nss_log_plans WHERE 1=1 and judge = '纯销'
+		and client = #client#
+		and year = #year#
+		<isNotEmpty property="provinces" prepend="and">
+		 	province in
+		 	<iterate property="provinces" open="(" close=")" conjunction=",">
+				#provinces[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="citys" prepend="and">
+		 	city in
+		 	<iterate property="citys" open="(" close=")" conjunction=",">
+				#citys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="countys" prepend="and">
+		 	county in
+		 	<iterate property="countys" open="(" close=")" conjunction=",">
+				#countys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="terminals" prepend="and">
+		 	terminal in
+		 	<iterate property="terminals" open="(" close=")" conjunction=",">
+				#terminals[]#
+			</iterate>
+		</isNotEmpty>
+	</select>
+	<!-- 查询费用 f5-->
+	<select id="queryPlansF5" parameterClass="java.util.Map" resultClass="PlanDTO">
+		SELECT
+		status5 status ,
+		money5 money
+		FROM kdb_nss_log_plans WHERE 1=1 and judge = '纯销'
+		and client = #client#
+		and year = #year#
+		<isNotEmpty property="provinces" prepend="and">
+		 	province in
+		 	<iterate property="provinces" open="(" close=")" conjunction=",">
+				#provinces[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="citys" prepend="and">
+		 	city in
+		 	<iterate property="citys" open="(" close=")" conjunction=",">
+				#citys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="countys" prepend="and">
+		 	county in
+		 	<iterate property="countys" open="(" close=")" conjunction=",">
+				#countys[]#
+			</iterate>
+		</isNotEmpty>
+		<isNotEmpty property="terminals" prepend="and">
+		 	terminal in
+		 	<iterate property="terminals" open="(" close=")" conjunction=",">
+				#terminals[]#
+			</iterate>
+		</isNotEmpty>
+	</select>
+	<!-- getWxClient 通过openid获取好伙伴-->
+	<select id="getWxClientByOpenid" parameterClass="java.util.Map" resultClass="WxClient">
+		SELECT
+		id id,name name,telephone telephone,province province,city city,
+		country country,terminal_collection terminalCollection,openid openid,
+		type type,mtime mtime,ctime ctime
+		FROM wx_client WHERE 1=1 
+		and openid = #openid#
+	</select>
+	<!-- getWxClient 通过手机号获取好伙伴-->
+	<select id="getWxClientByTelephone" parameterClass="java.util.Map" resultClass="WxClient">
+		SELECT
+		id id,name name,telephone telephone,province province,city city,
+		country country,terminal_collection terminalCollection,openid openid,
+		type type,mtime mtime,ctime ctime
+		FROM wx_client WHERE 1=1 
+		and telephone = #telephone#
+	</select>
+	<!-- getWxMailList 获取通讯录-->
+	<select id="getWxMailList" parameterClass="java.util.Map" resultClass="WxMailList">
+		SELECT
+		id id,name name,sex sex,mobile_phone mobilePhone,position position,
+		machine_number machineNumber,fax_number faxNumber,address address,
+		email email,region region,mtime mtime,ctime ctime
+		FROM wx_mail_list WHERE 1=1 
+		<isNotEmpty property="mobile_phone" prepend="and">
+			mobile_phone = #mobile_phone#
+		</isNotEmpty>
+	</select>
+</sqlMap> 

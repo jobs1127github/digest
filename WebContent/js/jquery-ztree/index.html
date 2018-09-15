@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>jQuery-ztree 加载树</title>
+<!-- 
+1、第一个（zTreeStyle.css）是zTree的样式css文件，引入了这个，才能呈现出树形的结构样式，
+2、第二个（jquery-1.8.3.min.js）是jQuery文件，因为要用到，
+3、第三个（jquery.ztree.all-3.5.min.js）则是zTree的核心js文件，这个是必须的，
+4、最后一个（jquery.ztree.excheck-3.5.min.js）则是拓展文件，主要用于单选框和复选框的功能，因为用到了复选框，所以也要要引进来。
+-->
+<link rel="stylesheet" href="zTreeStyle.css" type="text/css">
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="jquery.ztree.excheck-3.5.min.js"></script>
+
+<SCRIPT LANGUAGE="JavaScript">
+	var zTreeObj;
+	var setting = {}; // zTree 的参数配置，后面详解
+	var zNodes = [ // zTree 的数据属性，此处使用标准json格式
+	{
+		name : "test1菜单1",
+		open : true,//是否默认打开
+		children : [ {
+			name : "test1_1"
+		}, {
+			name : "test1_2"
+		} ]
+	}, 
+	{
+		name : "test2",
+		open : false,//是否默认打开
+		children : [ {
+			name : "test2_1"
+		}, {
+			name : "test2_2"
+		} ]
+	}];
+	
+	$(document).ready(function() {
+		 /**
+			 初始化zTree，三个参数一次分别是容器(zTree 的容器 className 别忘了设置为 "ztree")、
+		 	参数配置、数据源
+		 **/
+		zTreeObj = $.fn.zTree.init($("#treeDemo"), setting, zNodes);
+	});
+</SCRIPT>
+</head>
+<body>
+	<div>
+ 		<ul id="treeDemo" class="ztree"></ul> 
+ 	</div>
+ 	
+ 	
+ 	<br>
+ 	readme:
+ 	0 zTree简介 
+	树形控件的使用是应用开发过程中必不可少的。
+	zTree 是一个依靠 jQuery 实现的多功能 “树插件”。
+	优异的性能、灵活的配置、多种功能的组合是 zTree最大优点。 
+	
+	0.0 zTree的特点
+	 •最新版的zTree将核心代码按照功能进行了分割，不需要的代码可以不用加载，
+	 	如普通使用只需要加载核心的jquery.ztree.core-3.5.js，
+	 	需要使用勾选功能加载jquery.ztree.excheck-3.5.min.js，
+	 	需要使用编辑功能加载jquery.ztree.exedit-3.5.min.js
+	 •采用了延迟加载技术，上万节点轻松加载，即使在 IE6 下也能基本做到秒杀
+	 •兼容 IE、FireFox、Chrome、Opera、Safari 等浏览器
+	 •支持 JSON 数据
+	 •支持静态 和 Ajax 异步加载节点数据
+	 •支持任意更换皮肤 / 自定义图标（依靠css）
+	 •支持极其灵活的 checkbox 或 radio 选择功能
+	 •提供多种事件响应回调
+	 •灵活的编辑（增/删/改/查）功能，可随意拖拽节点，还可以多节点拖拽
+	 •在一个页面内可同时生成多个 Tree 实例
+	 •简单的参数配置实现，灵活多变的功能
+	 
+	 
+</body>
+</html>

@@ -1,0 +1,42 @@
+@charset "UTF-8";
+/* CSS Document */
+* {
+	padding: 0;
+	margin: 0;
+}
+
+html {
+	font-size: 62.5%;
+	height: 100%;
+}
+
+li {
+	list-style: none;
+}
+
+a {
+	list-style-type: none;
+	text-decoration: none;
+}
+
+body {
+	position: relative;
+}
+
+.aicheck table,.aisort p,.aisort li,.aiinfo li img,.aoinfo li img,.aidd1,.aidd2,.footer p,.aedinfo p,.radio,.place,.iipay1,.iipay2,.iipay3,.rinfo1,.iipic p,.expic p,.iidinfo p,.iiradio,.iisubmit1,.iipcheck,.rewardtittle dl,.rewardinfo dd,.infoimg
+	{
+	float: left;
+}
+
+.aicmore,.aidd3,.aidd4,.btinfo li img,.aominfo li p,.brok_main a,.iilabel p,.rinfo2,.iisubmit2,.rewardtittle dd
+	{
+	float: right;
+}
+
+.g {
+	color: #6db278
+}
+
+.red {
+	color: #f53700 !important
+}

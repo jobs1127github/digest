@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="wxService">
+	<typeAlias alias="digestGoldVo" type="com.tentinet.app.bean.DigestGoldVo" />
+	
+	<!--微用户取消关注公众号 -->
+	<update id="unSubscribeWX" parameterClass="java.util.Map">
+		update wx_openid_wxno set status='N' where 1=1
+		<isNotEmpty property="openid" prepend="and">
+			openid=#openid#
+		</isNotEmpty>
+	</update>
+	
+	
+	<!-- 查询当前用户是否已领取了关注金币 -->
+	<select id="isAttentionGold" parameterClass="java.util.Map" resultClass="digestGoldVo">
+		SELECT tid,
+		openid,
+		gold,
+		send_time,
+		send_type,
+		created_by,
+		created_time,
+		updated_by,
+		share_count,
+		updated_time FROM wx_digest_gold WHERE 1=1 
+		<isNotEmpty property="openid" prepend="and">
+			openid=#openid#
+		</isNotEmpty>
+		<isNotEmpty property="send_type" prepend="and">
+			send_type=#send_type#
+		</isNotEmpty>
+	</select>
+ 	<!-- 更改用户状态为待认证 -->
+ 	<update id="updateWXUserRole" parameterClass="java.util.Map">
+	    update wx_openid_wxno set role='0' where 1=1 and openid=#openid#
+	</update>
+	
+	<!-- 查询系统给用户的金币的记录在表中是否存在 -->
+	<select id="queryDisgetGoldList" parameterClass="java.util.Map" resultClass="digestGoldVo">
+	     SELECT tid,
+		openid,
+		gold,
+		send_time,
+		send_type,
+		created_by,
+		created_time,
+		updated_by,
+		share_count,
+		updated_time FROM wx_digest_gold WHERE 1=1 
+		<isNotEmpty property="openid" prepend="and">
+			openid=#openid#
+		</isNotEmpty>
+		<isNotEmpty property="send_type" prepend="and">
+			send_type=#send_type#
+		</isNotEmpty>
+		<isNotEmpty property="send_type" prepend="and">
+			send_time like #send_time#
+		</isNotEmpty>
+	</select>
+	
+	 <update id="updateWXUser" parameterClass="java.util.Map">
+		UPDATE wx_openid_wxno 
+		 
+		<isNotEmpty property="status" prepend="SET">
+		status=#status#
+		</isNotEmpty>
+
+		 WHERE 1=1 AND openid=#openid#	
+	</update>
+
+</sqlMap>

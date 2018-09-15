@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>新增资讯标签</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="This is my page">
+
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript"src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<base target="_self">
+
+</head>
+<script>
+	//获取地址栏?后的参数
+	
+	function closeWin(){
+		window.location.href="dataDictionary_list.html";
+	}
+
+	function saveDataDictionaryInfo(){
+		var dataItem=$("#mark_name").val();
+		if (dataItem==null || dataItem=="") {
+			alert("标签不能为空!");
+			return;
+		}
+		var params = $("#DataDictionaryAddTable").serialize();
+		sendRequest(pageContextPath+"/system/saveMarkVoInfo.do", params, function(jsonData) {
+		if (jsonData.data == 1) {
+			alert("新增成功");
+			window.close();
+		  }else{
+			  alert("新增失败!");
+		  }
+		});
+			
+	}
+	 
+</script>
+<script >
+	window.onunload = function(){ 
+	window.opener.location.reload(); 
+}
+</script>
+<body style='overflow: scroll; overflow-x: hidden' >
+	<div style="margin-bottom: 10px;">
+		<img src="../images/t.png" /><span style="font-size: 18px;">新增标签</span>
+	</div>
+	<form name="DataDictionaryAddTable" id="DataDictionaryAddTable" method="post">
+		<fieldset>
+			<legend>
+				<strong>资讯标签</strong>
+			</legend>
+			<table id="AddTable">
+				<tr>
+					<td>资讯标签名</td>
+					<td><input type="text" name="mark_name" id="mark_name"
+						/></td>
+				</tr>
+			</table>
+		</fieldset>
+		<br />
+		<div style="float: left; text-align: center; margin-left: 300.5px;">
+			<a href="#" onclick="saveDataDictionaryInfo()"><div class="btns1">保存</div></a>
+			<a href="#" onclick="window.close()"><div class="btns1">关闭</div></a>
+		</div>
+	</form>
+</body>
+</html>

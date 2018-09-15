@@ -1,0 +1,27 @@
+/* 半透明的遮罩层 */
+#overlay {
+    filter: alpha(opacity=0.9); /* IE的透明度 */
+    opacity: 0.9;  /* 透明度 */
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    z-index: 110; /* 此处的图层要大于页面 */
+    background-color :white;
+    display:none;
+    margin-left: -1em;
+}
+
+
+.beijing{
+	filter: alpha(opacity=0.9); /* IE的透明度 */
+    opacity: 0.9;  /* 透明度 */
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    z-index: 110; /* 此处的图层要大于页面 */
+    background-color :white;
+    display:none;
+    margin-left: -1em;
+}

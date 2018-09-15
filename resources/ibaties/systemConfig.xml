@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<!-- 可以配置很多的sqlMap，通过namespace命名空间来区分，每个namespace下可以有很多select，
+每个select通过id来区分，故在调用时，要传递sqlId进来，通过sqlId找到namespace，在找到对应的id，在根据id
+找到对应的select-->
+<sqlMap namespace="system"> 
+
+	<!-- 给对应的type取别名 -->
+	<typeAlias alias="userVo" type="com.tentinet.app.bean.UserVo" />
+	<typeAlias alias="menuTreeVo" type="com.tentinet.app.bean.dto.MenuTreeBean" />
+	<typeAlias alias="dataDictionaryVo" type="com.tentinet.app.bean.DataDictionaryVo" />
+	<typeAlias alias="menuVo" type="com.tentinet.app.bean.MenuVo" />
+	
+	<!--在iBATIS中isNull用于判断参数是否为Null，isNotNull相反。
+		isEmpty判断参数是否为Null或者空，满足其中一个条件则为true，isNotEmpty相反。
+		
+		isNotEmpty：当参数既不为Null，并且也不为空时其为true 判断之后做相对应的表达式操作 -->
+	
+	<!--用户登录 
+		parameterClass接收参数的类为java.util.Map，即参数通过Map来接收，
+		查询出来的结果封装到resultClass对应的类中，userVo是上面的别名，alias="userVo"
+		prepend：预先考虑，预先计划，预谋;-->
+	<select id="loginUser" parameterClass="java.util.Map" resultClass="userVo">
+		select * from t_user where 1=1 and status='Y'
+		<!--userName、userPass 是Map对应的参数params ；user_name这个是对应数据库表的字段-->
+		<isNotEmpty property="userName" prepend="and">
+			user_name=#userName#
+		</isNotEmpty>
+
+		<isNotEmpty property="userPass" prepend="and">
+			user_pass=#userPass#
+		</isNotEmpty>
+	</select>
+
+
+	<!--根据用户ID得到对应的role和menu menuTreeVo为MenuVo菜单对象对应的DTO对象-->
+	<select id="userRoleAndMenuByUserId2" parameterClass="java.util.Map" resultClass="menuTreeVo">
+		select t.menuid as id,
+		t.title as text,
+		t.menuurl as menuRUL,
+		t.icon as icon
+		from t_menu t
+		where t.menuid in (select b.menu_id from t_user
+		a,t_role_menu b, t_role e
+		where 1=1
+		and e.role_id = b.role_id
+		and a.user_role = b.role_id
+		and e.role_status='Y'
+		<isNotEmpty property="userId" prepend="and">
+			a.user_id =#userId#
+		</isNotEmpty>
+		)
+		<isNotEmpty property="parMenuId" prepend="and">
+			t.parmenuid=#parMenuId#
+		</isNotEmpty>
+		order by t.menuid
+	</select>
+	
+	<!--优化SQL后，根据用户ID得到对应的role和menu menuTreeVo为MenuVo菜单对象对应的DTO对象-->
+	<select id="userRoleAndMenuByUserId" parameterClass="java.util.Map" resultClass="menuTreeVo">
+		select t.menuid id,
+		t.title text,
+		t.menuurl menuRUL,
+		t.icon icon,
+		t.parmenuid parMenuId 
+		from t_menu t
+		where exists (select w.id from 
+		(select b.menu_id id from t_user 
+			a,t_role_menu b, t_role e
+			where 1=1
+			and e.role_id = b.role_id
+			and a.user_role = b.role_id
+			and e.role_status='Y'
+			<isNotEmpty property="userId" prepend="and">
+				a.user_id =#userId#
+			</isNotEmpty>
+		) w 
+		where (t.menuid = w.id)
+		)
+		<isNotEmpty property="parMenuId" prepend="and">
+			t.parmenuid=#parMenuId#
+		</isNotEmpty>
+		order by t.menuid
+	</select>
+
+
+	<!-- 查询用户列表 -->
+	<select id="queryUserInfos" parameterClass="java.util.Map" resultClass="userVo">
+		select user_id,
+		user_name,
+		user_sex,
+		user_idCard,
+		user_birthday,
+		user_mail,
+		user_tentinet_mail,
+		user_weixin_no,
+		status,
+		created_by,
+		updated_by,
+		created_time,
+		updated_time,
+		user_role
+		from t_user where 1=1
+		<isNotEmpty property="user_id" prepend="and">
+			user_id like #user_id#
+		</isNotEmpty>
+
+		<isNotEmpty property="user_name" prepend="and">
+			user_name like #user_name#
+		</isNotEmpty>
+
+		<isNotEmpty property="user_sex" prepend="and">
+			user_sex=#user_sex#
+		</isNotEmpty>
+
+		<isNotEmpty property="status" prepend="and">
+			status =#status#
+		</isNotEmpty>
+		order by updated_time desc
+	</select>
+	<!-- 查询用户的数量 -->
+	<select id="queryUserCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		select count(1)
+		from t_user where 1=1
+		<isNotEmpty property="user_id" prepend="and">
+			user_id like
+			#user_id#
+		</isNotEmpty>
+
+		<isNotEmpty property="user_name" prepend="and">
+			user_name like
+			#user_name#
+		</isNotEmpty>
+
+		<isNotEmpty property="user_sex" prepend="and">
+			user_sex=#user_sex#
+		</isNotEmpty>
+
+		<isNotEmpty property="status" prepend="and">
+			status =#status#
+		</isNotEmpty>
+	</select>
+
+
+	<!-- 界面中初始化数据字典 -->
+	<select id="loadinitDatas" parameterClass="java.util.Map" resultClass="dataDictionaryVo">
+		SELECT
+		t_data_item AS dataItem,
+		t_data_value AS
+		dataValue,
+		t_data_type AS
+		dataType,
+		t_data_key
+		AS datakey
+		FROM t_data_dictionary
+		WHERE 1 = 1
+		<isNotEmpty property="dataType" prepend="and">
+			t_data_type
+			=#dataType#
+		</isNotEmpty>
+	</select>
+
+
+	<!-- 查询所有的菜单 -->
+	<select id="queryMenusInfos" parameterClass="java.util.Map" resultClass="menuVo">
+		select menuid as menuid , parmenuid as parmenuid, title as
+		title from t_menu
+	</select>
+
+	<!-- 根据RoleId查询菜单与角色的请情 -->
+	<select id="getMenuOfRoleByRoleId" parameterClass="java.util.Map"
+		resultClass="menuTreeVo">
+		select a.title as text,
+		a.menuid as id,
+		a.enable as state,
+		c.role_id as roleId,
+		c.role_name as roleName,
+		a.menuurl as menuRUL,
+		a.parmenuid as menuRUL,
+		c.memo as memo,
+		a.icon as icon
+		from t_menu a,
+		t_role_menu b, t_role c
+		where 1 = 1
+		and c.role_id = b.role_id
+		and
+		b.menu_id = a.menuid
+		and c.role_id = #roleId#
+
+	</select>
+
+	<!-- 查询所有的数据字典的内容列表 -->
+	<select id="queryDataDictionaryInfos" parameterClass="java.util.Map"
+		resultClass="dataDictionaryVo">
+		select
+		t_data_item as dataItem,
+		t_data_value as dataValue,
+		t_data_type as
+		dataType,
+		t_data_key as datakey,
+		status as status
+		from t_data_dictionary
+		where 1 = 1
+		<isNotEmpty property="datakey" prepend="and">
+			t_data_key like
+			#datakey#
+		</isNotEmpty>
+
+		<isNotEmpty property="dataItem" prepend="and">
+			t_data_item like
+			#dataItem#
+		</isNotEmpty>
+
+		<isNotEmpty property="dataValue" prepend="and">
+			t_data_value like
+			#dataValue#
+		</isNotEmpty>
+
+		<isNotEmpty property="status" prepend="and">
+			status=#status#
+		</isNotEmpty>
+
+	</select>
+
+	<!-- 查询数据字典的数量 ，property="datakey"是map中的key,
+		<isNotEmpty标签里的内容t_data_key为数据库的字段，通过#属性#的方式拿取map的key对应的value值-->
+	<select id="queryDataDictionaryCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		select
+		count(1)
+		from t_data_dictionary
+		where 1 = 1
+		<isNotEmpty property="datakey" prepend="and">
+			t_data_key like
+			#datakey#
+		</isNotEmpty>
+
+		<isNotEmpty property="dataItem" prepend="and">
+			t_data_item like
+			#dataItem#
+		</isNotEmpty>
+
+		<isNotEmpty property="dataValue" prepend="and">
+			t_data_value like
+			#dataValue#
+		</isNotEmpty>
+
+		<isNotEmpty property="status" prepend="and">
+			status=#status#
+		</isNotEmpty>
+	</select>
+	<!-- 查询标签数量 -->
+	<select id="queryBiaoQianCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		select
+		count(1)
+		from wx_information_mark
+		where 1 = 1
+		<isNotEmpty property="mark" prepend="and">
+			mark_name like #mark#
+		</isNotEmpty>
+	</select>
+	<!-- 标签查询 -->
+	<select id="loadinitMark" parameterClass="java.util.Map"
+		resultClass="dataDictionaryVo">
+		SELECT
+		mark_code AS dataItem,
+		mark_name AS dataValue
+		FROM
+		wx_information_mark
+		WHERE 1 = 1
+		<isNotEmpty property="mark" prepend="and">
+			mark_name = #mark#
+		</isNotEmpty>
+	</select>
+	<!-- 专家查询 -->
+	<select id="loadinitExpert" parameterClass="java.util.Map" resultClass="dataDictionaryVo">
+		SELECT t.`openid` AS dataItem,t.`expert` AS dataValue FROM
+		wx_openid_wxno t WHERE t.`status`='Y' AND t.`role`='2'
+		<isNotEmpty property="openid" prepend="and">
+			openid
+			=#openid#
+		</isNotEmpty>
+
+	</select>
+	<!-- 群组查询 -->
+	<select id="loadinitGroup" parameterClass="java.util.Map"
+		resultClass="dataDictionaryVo">
+		SELECT t.`group_id` AS dataItem,t.`group_name` AS dataValue FROM
+		wx_user_group t WHERE 1=1
+		<isNotEmpty property="group_id" prepend="and">
+			group_id
+			=#group_id#
+		</isNotEmpty>
+
+	</select>
+</sqlMap> 

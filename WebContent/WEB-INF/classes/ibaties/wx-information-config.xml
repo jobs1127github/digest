@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="information">
+	<typeAlias alias="InformationVo" type="com.tentinet.app.bean.InformationVo" />
+	<typeAlias alias="MarkVo" type="com.tentinet.app.bean.MarkVo" />
+	<typeAlias alias="InformationDto" type="com.tentinet.app.bean.dto.InformationDto" />
+	<typeAlias alias="boutiqueVo" type="com.tentinet.app.bean.BoutiqueVo" />
+	
+	
+	<!-- 查询资讯列表 -->
+	<select id="queryInformationInfos" parameterClass="java.util.Map"
+		resultClass="InformationDto">
+		SELECT  
+			i.information_id,
+			i.title,
+			i.tile_img_url,
+			i.introduce,
+			i.keywords,
+			i.content,
+			i.audio_url,
+			i.openid,
+			i.status,
+			i.information_type,
+			i.mark,
+			i.best_flag,
+			i.created_by,
+			i.created_time,
+			i.updated_by,
+			i.updated_time,
+			(select u.expert from wx_openid_wxno u where u.openid=i.openid)  expert,
+			<!-- DATE_FORMAT(i.created_time,'%Y-%m-%d %H:%i:%s') created_time,
+			(SELECT mark_name FROM wx_information_mark t WHERE t.mark_code=i.`mark`) AS mark_name, -->
+			(SELECT t_data_value FROM t_data_dictionary t WHERE t.t_data_type='informationType' AND t.t_data_item=i.`information_type`)  AS information_name,
+			(SELECT SUM(t.gold) FROM  wx_information_award_info t WHERE t.information_id=i.information_id) AS award_money,
+			(SELECT t.browse_count FROM wx_information_browse_count t WHERE t.information_id=i.information_id) AS browse_count,
+			(SELECT t.share_count FROM wx_information_share_count t WHERE t.information_id=i.information_id) AS share_count
+		FROM
+		  wx_information i
+		WHERE 1=1
+		  <isNotEmpty property="best_flag" prepend="and">
+		      i.`best_flag` LIKE  #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		     i.`openid` =  #openid#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>
+		  
+  		order by updated_time desc
+	</select>
+	<!-- 查询资讯的数量 -->
+	<select id="queryInformationCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1) FROM
+		  wx_information i
+		WHERE 1=1
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="best_flag" prepend="and">
+		      i.`best_flag` LIKE  #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		    i.`openid` =  #openid#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>		  
+	</select>
+	
+	<!-- 查询标签的详情 -->
+	<select id="queryMarkVoInfo" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT DISTINCT m.mark_code,m.mark_name
+		FROM wx_information_mark m,wx_user_mark u 
+		WHERE  FIND_IN_SET(m.mark_code, u.str_mark) > 0 
+		and u.openid= #openId#
+	</select>
+	<!-- 查询标签的详情 -->
+	<select id="queryInfoMarkVoInfo" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT  m.mark_code,
+		m.mark_name 
+		FROM wx_information_mark m,
+		wx_information i 
+		WHERE FIND_IN_SET(concat(m.mark_code,'/'), i.mark)>0
+		  <isNotEmpty property="information_id" prepend="and">
+		      i.information_id=#information_id#
+		  </isNotEmpty>
+	</select>
+	<!-- 查询所有标签的详情 -->
+	<select id="queryAllMarkVoInfo" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT DISTINCT m.mark_code,m.mark_name
+		FROM wx_information_mark m 
+		ORDER BY CAST(mark_code AS SIGNED) 
+	</select>
+	<!-- 查询所有分类的详情 -->
+	<select id="queryAllType" parameterClass="java.util.Map"
+		resultClass="MarkVo">
+		SELECT t_data_item AS mark_code,
+		t_data_value AS mark_name		
+		FROM t_data_dictionary
+		WHERE t_data_type='informationType'
+		ORDER BY CAST(mark_code AS SIGNED) 
+	</select>
+	<!-- 查询标签的数量 -->
+	<select id="queryMarkVoCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT COUNT(1) 
+		FROM wx_information_mark m,wx_user_mark u 
+		WHERE 1=1
+		  <isNotEmpty property="openid" prepend="and">
+		      u.str_mark=m.mark_code AND u.openid=#openid#
+		  </isNotEmpty>
+	</select>
+	
+	<!-- 前台查询资讯列表 -->
+	<select id="queryInformations" parameterClass="java.util.Map"
+		resultClass="InformationDto">
+		SELECT  
+			i.information_id,
+			i.title,
+			i.tile_img_url,
+			i.information_type,
+			i.mark,
+			i.created_time,
+			(SELECT u.expert FROM wx_openid_wxno u WHERE u.openid=i.openid) AS expert,
+			(SELECT t_data_value FROM t_data_dictionary t WHERE t.t_data_type='informationType' AND t.t_data_item=i.`information_type`)  AS information_name,
+			 (SELECT COUNT(1) FROM  wx_information_award_info t WHERE t.information_id=i.information_id)  AS share_count,
+			IFNULL((SELECT t.browse_count FROM wx_information_browse_count t WHERE t.information_id=i.information_id),0) AS browse_count
+		FROM
+		  wx_information i
+		WHERE 1=1 and i.status='3' 
+		  <isNotEmpty property="title" prepend="and">
+		     i.`title` like #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty> 
+		  <isNotEmpty property="information_type" prepend="and">
+		     i.`information_type`=#information_type#
+		  </isNotEmpty>
+		  <isNotEmpty property="best_flag" prepend="and">
+		     i.`best_flag` = #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		     i.openid = #openid#
+		  </isNotEmpty>
+		  <dynamic prepend="ORDER BY">
+   			<isNotEmpty property="orderby">
+			    $orderby$
+			</isNotEmpty>
+  		</dynamic>
+  		limit $beginnum$,10;
+	</select>
+	
+	<select id="queryInformationsCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT COUNT(1) 
+		FROM
+		  wx_information i
+		WHERE 1=1 and i.status='3'
+		  <isNotEmpty property="title" prepend="and">
+		     i.`title` like #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="mark" prepend="and">
+		     i.`mark` like #mark#
+		  </isNotEmpty>
+		  <isNotEmpty property="openid" prepend="and">
+		     i.openid = #openid#
+		  </isNotEmpty>
+		  <isNotEmpty property="best_flag" prepend="and">
+		     i.`best_flag` = #best_flag#
+		  </isNotEmpty>
+		  <isNotEmpty property="information_type" prepend="and">
+		     i.`information_type`=#information_type#
+		  </isNotEmpty>
+	</select>
+	<!-- 前台查询资讯详情 -->
+	<select id="queryInformationDto" parameterClass="java.util.Map"
+		resultClass="InformationDto">
+		SELECT  
+			i.information_id,
+			i.title,
+			i.audio_url,
+			i.introduce,
+			i.tile_img_url,
+			i.content,
+			i.openid,
+			i.mark,
+			i.created_time,
+			(SELECT u.expert FROM wx_openid_wxno u WHERE u.openid=i.openid) AS expert,
+			(SELECT t_data_value FROM t_data_dictionary t WHERE t.t_data_type='informationType' AND t.t_data_item=i.`information_type`)  AS information_name,
+			(SELECT COUNT(1) FROM  wx_information_award_info t WHERE t.information_id=i.information_id) AS award_money,
+			(SELECT t.browse_count FROM wx_information_browse_count t WHERE t.information_id=i.information_id) AS browse_count
+
+		FROM
+		  wx_information i
+		  where i.information_id=#information_id#
+	</select>
+	<!-- 查询精品资讯列表 -->
+	<select id="boutiqueInfos" parameterClass="java.util.Map"
+		resultClass="boutiqueVo">
+		SELECT information_id,title,title_img_url,content_url,status,
+		created_by,created_time,updated_by,updated_time,headline FROM
+		  wx_information_boutique i 
+		WHERE 1=1
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>	
+  		order by updated_time desc
+	</select>
+	<!-- 查询精品资讯的数量 -->
+	<select id="boutiqueInfosCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1) FROM
+		  wx_information_boutique i 
+		WHERE 1=1
+		  <isNotEmpty property="title" prepend="and">
+		      i.`title` LIKE  #title#
+		  </isNotEmpty>
+		  <isNotEmpty property="status" prepend="and">
+		     i.`status`=#status#
+		  </isNotEmpty>
+		  <isNotEmpty property="status_34" prepend="and">
+		     i.`status` in('3','4')
+		  </isNotEmpty>	
+	</select>
+	<!-- 查询今日对应openid是否有浏览对应information -->
+	<select id="findBrowseInfo" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		SELECT count(1) FROM wx_information_browse_info 
+		WHERE information_id=#information_id#
+		AND browser_openid=#openid#
+		AND TO_DAYS(browse_time)=TO_DAYS(#browse_time#)
+		
+	</select>
+	
+	<!-- 精品头条 -->
+	<select id="queryTittleBoutique" parameterClass="java.util.Map"
+		resultClass="boutiqueVo">
+		SELECT information_id,
+		title,
+		title_img_url,
+		content_url 
+		FROM wx_information_boutique 
+		WHERE headline='Y' 
+		and status='3'
+		ORDER BY updated_time desc
+		limit 0,1
+	</select>
+	<!-- 精品资讯 -->
+	<select id="queryBoutique" parameterClass="java.util.Map"
+		resultClass="boutiqueVo">
+		SELECT information_id,
+		title,
+		title_img_url,
+		content_url
+		FROM wx_information_boutique 
+		WHERE headline='N' 
+		and status='3'
+		ORDER BY updated_time DESC
+		LIMIT 0,10
+	</select>
+	
+
+</sqlMap> 

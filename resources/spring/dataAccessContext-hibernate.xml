@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:ehcache="http://www.springmodules.org/schema/ehcache"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+	http://www.springframework.org/schema/context 
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+	http://www.springframework.org/schema/aop 
+	http://www.springframework.org/schema/aop/spring-aop-3.0.xsd 
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="dataSourceReport" />
+
+		 <!-- 这种方式，要把需要用到的实体类都手动追加到这里，否则该实体类不会被该sessionFactory对象管理
+		 	这种方式比较麻烦，推荐下面的配置方式 
+		 <property name="annotatedClasses">
+            <list>
+				<value>com.tentinet.app.bean.AreaVo</value>
+				<value>com.tentinet.app.bean.BoutiqueVo</value>
+				<value>com.tentinet.app.bean.DataDictionaryVo</value>
+				<value>com.tentinet.app.bean.DigestGoldVo</value>
+				<value>com.tentinet.app.bean.DigestRedPacketVo</value>
+				<value>com.tentinet.app.bean.ExpertMoneyVo</value>
+				<value>com.tentinet.app.bean.InformationBrowseInfoVo</value>	
+				<value>com.tentinet.app.bean.InformationBrowseCountVo</value>			
+				<value>com.tentinet.app.bean.InformationAwardInfoVo</value>	
+				<value>com.tentinet.app.bean.InformationAwardCountVo</value>
+				<value>com.tentinet.app.bean.InformationShareInfoVo</value>		
+				<value>com.tentinet.app.bean.InformationShareCountVo</value>
+				<value>com.tentinet.app.bean.InformationVo</value>
+				<value>com.tentinet.app.bean.MarkVo</value>
+				<value>com.tentinet.app.bean.MenuVo</value>
+				<value>com.tentinet.app.bean.RoleMenuVo</value>
+				<value>com.tentinet.app.bean.RoleVo</value>
+				<value>com.tentinet.app.bean.UserCharLogVo</value>
+				<value>com.tentinet.app.bean.UserGoldCountVo</value>
+				<value>com.tentinet.app.bean.UserGroupVo</value>
+				<value>com.tentinet.app.bean.UserMarkVo</value>
+				<value>com.tentinet.app.bean.UserVo</value>
+				<value>com.tentinet.app.bean.WXUserVo</value>
+				<value>com.tentinet.app.bean.QianDao</value>
+            </list>
+        </property>
+        -->
+        <!-- 这种方式，可以自动的去扫描实体类，不用再手动去追加了。 -->
+        <property name="packagesToScan"><!-- 扫描java bean -->
+			<list>
+				<value>com.tentinet.app.bean</value>
+			</list>
+		</property>
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+				<prop key="hibernate.show_sql">false</prop>
+				<!-- 连接释放模式 -->
+				<prop key="hibernate.connection.release_mode">auto</prop>
+				<!-- 数据库隔离级别 Read Uncommitted 读未提交数据。隔离级别最差: 1 Read Committed 读已提交数据: 
+					2 Repeatable Read 可重复读: 4 Serializable 串行化,隔离级别最高: 8 -->
+				<prop key="hibernate.connection.isolation">2</prop>
+				<!-- 如果开启, Hibernate将收集有助于性能调节的统计数据 -->
+				<prop key="hibernate.generate_statistics">false</prop>
+				<!-- 在log和console中打印出更漂亮的sql -->
+				<prop key="hibernate.format_sql">false</prop>
+				<prop key="hibernate.query.factory_class">org.hibernate.hql.classic.ClassicQueryTranslatorFactory
+				</prop>
+				<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>
+				<prop key="hibernate.cache.use_query_cache">true</prop>
+				<prop key="hibernate.jdbc.batch_size">20</prop>
+				<prop key="hibernate.jdbc.use_get_generated_keys">false</prop>
+				<prop key="hibernate.bytecode.provider">cglib</prop>
+				
+				<!-- Hibernate框架session会话与当前线程绑定 该配置事务配置，要看事务的处理方式来决定。
+				参考：SystemServiceImpl里的savaMarkVo_test2方法-->
+				<prop key="hibernate.current_session_context_class">
+					thread
+				</prop>
+				
+			</props>
+		</property>
+	</bean>
+	
+	<!-- 声明式事务配置 ：
+	 * 1、配置事务管理器； 这里配置了一个hibernate的事务管理器
+	 * 2、事务的传播特性；参考transaction-hibernate.xml
+	 * 3、那些类那些方法使用事务。
+	 -->
+	 
+	 
+	<!-- 
+	使用hibernate，操作数据，
+		方式1：session去操作，事务自己编程控制。
+		方式2：hibernateTemplate去操作，事务：
+		1、hibernateTemplate有自己默认的事务。若只是操作一个动作时，比如就保存一个对象，默认的事务就够使了，
+		如果在一个方法里想操作两个或更多的动作，比如保存一个对象，有更新另一个对象两个动作，默认的事务就不行了。
+		这时要使用声明式事务，或编程式事务。
+		2、如果配置了声明式事务管理，则使用配置的声明式事务管理。
+		特别注意：如果配置了声明式事务，如果使用session的getCurrentSession()的session来操作数据，
+		在不使用手动设置事务的情况下，想使用声明式事务，则必须这个时候必须注释掉如下语句：
+		<property name="current_session_context_class">thread</property> 
+		
+	实例化hibernate的事务管理器，配置Hibernate的事物管理器 
+	<bean id="hibernateTransactionManager"
+		class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
+	</bean>
+	-->
+	<!--声明式事务配置的 注解方式的相关配置 @Transactional 这里把hibernate的声明式事务管理注释掉了，
+	hibernateTemplate的只能使用自己默认的事务。
+	<tx:annotation-driven transaction-manager="hibernateTransactionManager" proxy-target-class="true"/>
+	-->
+	 
+	<!-- 该 hibernateTemplate对象的sessionFactory属性的数据源是在Spring配置文件中配置，
+		可以利用Spring的默认设置，自动提交事务。-->
+    <bean id="hibernateTemplate" class="org.springframework.orm.hibernate3.HibernateTemplate">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+	<!-- 这里以单例的形式注入了hibernateTemplate -->
+	<bean id="commonHibernateBaseDao"
+		class="com.tentinet.app.service.impl.CommonHibernateBaseDaoImpl">
+		<property name="hibernateTemplate" ref="hibernateTemplate"></property>
+	</bean>
+
+
+	<!-- JPA框架的相关配置 开始 -->
+	<!-- Spring容器启动，自动装配EntityManagerFactory对象
+		 EntityManagerFactory EntityManagerFactory工厂，可以生产EntityManager对象.
+		 loadTimeWeaver可以不用配置，Spring会使用默认的类来实现植入的一些工作，配置也可以，用指定的类来做一些额外的植入工作。 -->
+	<bean id="myEntityManagerFactory"
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+		<property name="dataSource" ref="dataSourceReport" /><!--引用上面的dataSource对象  -->
+		<property name="persistenceXmlLocation" value="classpath:META-INF/persistence.xml" /> 
+		<property name="loadTimeWeaver">
+			<bean class="org.springframework.instrument.classloading.InstrumentationLoadTimeWeaver" />
+		</property>
+	</bean>
+	
+	<!--JPA的一个事务管理,声明式事务管理, 说白了集成JPA,
+		就是通过JPA来管理实体对象,就是集成JPA的事务,采用JPA的事务管理器来管理实体对象, 
+		要集成JPA事务管理器JpaTransactionManager,
+		要为此JpaTransactionManger注入EntityManagerFactory, 
+		而EntitymanagerFactory要求注入datasource和persistence -->
+	<bean id="JpaTxManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="entityManagerFactory" ref="myEntityManagerFactory" /><!-- 引用上面的myEntityManagerFactory对象 -->
+	</bean>
+	<!-- 打开 注解事务驱动  -->
+	<tx:annotation-driven 
+		transaction-manager="JpaTxManager" proxy-target-class="true" /> <!-- 引用下面的id="JpaTxManager对象" -->
+
+	<!-- JPA框架相关配置 结束 -->
+	
+
+
+
+
+	
+	<!--
+		集成compass,把compass交给spring管理,
+		就如同把hibernate3.3.2/JPA交给spring管理一样,
+		1.都能享受到spring的单例模式,保证了他们的实体bean是一个单例,只被初始化一次. 
+		2.使得他们的事务与spring的事务保持一致.
+	-->
+	<bean id="compass" class="org.compass.spring.LocalCompassBean">
+		<!--搜索实体集合-->
+		<property name="classMappings">
+			<list>
+				<value>cn.jobs1127.compass.productSearch.Product</value>
+				<value>cn.jobs1127.compass.productSearch.Brand</value>
+				<value>com.tentinet.app.bean.MarkVo</value>
+			</list>
+		</property>
+		<property name="compassSettings">
+			<props>
+				<!--设置compass的默认值为paoding的字典分词,此compass用的是paoding解析器-->
+				<prop key="compass.engine.analyzer.default.type">net.paoding.analysis.analyzer.PaodingAnalyzer</prop>
+
+				<!--指定索引文件的保存路径,在硬盘上建立索引文件-->
+				<prop key="compass.engine.connection">file://d:/index</prop>
+				<!--
+					在内存中建立索引 <prop key="compass.engine.connection">ram://index</prop>
+				-->
+
+				<!--搜索的关键字高亮显示 <![CDATA[]]这个标签包起来的标签，以免xml把<font单做自己的标签。保证<font原样输出-->
+				<prop key="compass.engine.highlighter.default.formatter.simple.pre"><![CDATA[<font color='red'>]]></prop>
+				<prop key="compass.engine.highlighter.default.formatter.simple.post"><![CDATA[</font>]]></prop>
+
+				<!--注入spring的事务到compass,使得compass应用spring的事务-->
+				<prop key="compass.transaction.factory">org.compass.spring.transaction.SpringSyncTransactionFactory
+				</prop>
+			</props>
+		</property>
+		<property name="transactionManager" ref="JpaTxManager"></property>
+	</bean>
+	
+	<!-- 在配置文件中注入 compassTemplate实例-->
+	<bean id="compassTemplate" class="org.compass.core.CompassTemplate">
+		<property name="compass" ref="compass"></property>
+	</bean>
+	
+	<!--监听JPA/hibernate对实体的增删改操作,通过JPS自动完成索引的增删改操作
+		与数据库的对象同步，其实就是实现了增量索引。-->
+	<bean id="compassGps" class="org.compass.gps.impl.SingleCompassGps"
+		init-method="start" destroy-method="start">
+		<property name="compass" ref="compass"></property>
+		<property name="gpsDevices">
+			<list>
+				<!--设置JPA驱动-->
+				<bean class="org.compass.gps.device.jpa.JpaGpsDevice">
+					<property name="name" value="jpaGpsDevice"></property>
+					<property name="entityManagerFactory" ref="myEntityManagerFactory"></property>
+					<property name="injectEntityLifecycleListener" value="true"></property>
+				</bean>
+				
+				
+				<!--设置Hibernate驱动
+				<bean class="org.compass.spring.device.hibernate.dep.SpringHibernate3GpsDevice">
+					<property name="name" value="HibernateDevice"></property>
+					<property name="sessionFactory" ref="sessionFactory"></property>
+				</bean>
+				-->
+			</list>
+		</property>
+	</bean>
+</beans>

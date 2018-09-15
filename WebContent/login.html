@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<!-- 设置该页面的编码 -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+<!-- 下面三句话，用于告诉浏览器不要缓存 -->
+<meta http-equiv="pragma" content="no-cache" />
+<meta http-equiv="cache-control" content="no-cache" />
+<meta http-equiv="expires" content="0" />
+
+<title>全泰消化专家管理系统</title>
+
+<!-- 引入自定义css样式 -->
+<link href="css/login.css" rel="stylesheet" type="text/css" />
+
+<!-- 引入jquery插件 -->
+<script type="text/javascript" src="javascript/jquery-1.6.4.min.js"></script>
+
+<!-- 封装HTTP请求相关的方法、发送请求、获取请求的参数、字符串trim方法 -->
+<script type="text/javascript" src="javascript/httpService.js"></script>
+
+<!-- 自定义的script方法 -->
+<script type="text/javascript">
+	function switchImage() {
+		//通过html id获得一个html元素
+		var image = document.getElementById('randomImage');
+		//alert(image);//Object HTMLImageElement
+		//alert($("#randomImage"));//object Object
+		//请求imgcode对应的servlet，返回一个图片,这里添加一个参数目的是告诉服务器请求的URL不同，应该刷新。每次得到一个新的验证码
+		image.src = "imgcode?imgCount=" + new Date();//web.xml里配置了servlet,<url-pattern>/imgcode</url-pattern>
+	}
+	
+	//回车登陆
+	function keyDown() {
+		//如果键盘按了回车
+		if (event.keyCode == 13) {
+			var params = $("#login").serialize();
+			//url=pageContextPath+"/toLogin.do"也可以
+			sendRequest("toLogin.do", params, function(jsonData) {
+				if (jsonData.message != null) {
+					alert(jsonData.message);
+					switchImage(); //更换图片
+				} else {
+					//加载用户权限，进入系统首页
+					window.location.href = "index.html";
+				}
+			});
+		}
+	}
+	//点击登录
+	function login() {
+		//测试trim()的代码
+		//var p = "   aa   	\n";
+		//alert('#'+p+'#');
+		//alert('#'+p.trim()+'#');
+		//return;
+		
+		var params = $("#login").serialize();
+		sendRequest(pageContextPath + "/toLogin.do", params,
+			function(jsonData) {
+				if (jsonData.message != null) {
+					alert(jsonData.message);
+					switchImage(); //更换图片
+				} else {
+					//登陆成功则，加载用户权限跳转到首页。
+					window.location.href = "index.html";
+				}
+		});
+	}
+</script>
+</head>
+
+
+<!-- onkeydown监听键盘按下事件，任何键盘按下都会触发该方法 -->
+<body onkeydown="keyDown()" >
+	<div class="main">
+		<div class="logo"></div>
+		<form id="login" name="login" action="" method="post">
+			<div class="mar">
+				<label for="name">用户名：</label> 
+				<input type="text" name="userName" id="name" />
+			</div>
+			<div class="mar">
+				<label for="userPass">密&nbsp;码：</label> 
+				<input type="password" id="userPass" name="userPass" />
+			</div>
+			<div class="mar">
+				<label for="textRandomCode">验证码：</label> 
+				<input type="text" id="textRandomCode" name="textRandomCode" style="width:80px;" /> 
+				
+				<!--imgcode是相对路径，http://localhost:8888/Digest_wx/imgcode
+					 该路径下对应一个sevlet，请求后会去找这个sevlet小应用程序 。
+					 图片的src=""会去请求服务器资源-->
+				<img align="center"
+					src="imgcode" id="randomImage" onclick="switchImage();"
+					title="看不清?请点击图片换一张" /> 
+				<br/>
+				<br/>
+				
+				<center>
+					<!-- 挨着放置，如果换行放置的话，两个input就排成2排了-->
+					<input onclick="login()" type="button" class="btn"/>
+				</center>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

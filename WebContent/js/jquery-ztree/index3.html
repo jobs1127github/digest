@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>jQuery-ztree 加载树3</title>
+<!-- 
+1、第一个（zTreeStyle.css）是zTree的样式css文件，引入了这个，才能呈现出树形的结构样式，
+2、第二个（jquery-1.8.3.min.js）是jQuery文件，因为要用到，
+3、第三个（jquery.ztree.all-3.5.min.js）则是zTree的核心js文件，这个是必须的，
+4、最后一个（jquery.ztree.excheck-3.5.min.js）则是拓展文件，主要用于单选框和复选框的功能，因为用到了复选框，所以也要要引进来。
+-->
+<link rel="stylesheet" href="zTreeStyle.css" type="text/css">
+<script type="text/javascript" src="jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="jquery.ztree.excheck-3.5.min.js"></script>
+
+
+<SCRIPT LANGUAGE="JavaScript">
+	var pageContextPath='/Digest_wx';
+	//var z=[{id:1,pId:-1,name:"系统基数管理"},{id:2,pId:-1,name:"权限管理"}];
+	$(function () {
+		 var setting = {   //此处根据自己需要进行配置
+			  view: {
+			   	selectedMulti: false
+			  },
+			  data: {
+			   	simpleData: {
+			   		enable: true
+			   	}
+		 	 },
+			 callback: {
+			   beforeRename:beforeRename,   
+			   onCheck:onCheck
+			 }
+		};
+		//http://www.jb51.net/article/89659.htm
+		//通过获取Digest_wx后台的菜单来初始化tree,故先要登陆后台，然后访问该页面
+		$.ajax({
+			type: "GET",
+			dataType:'json',
+			url: pageContextPath+"/menu/getRoleAndMenuByUserId.do",  //ajax请求地址
+		 	success: function (jsonData) {
+		 		var zNodes = [];
+		 		for(var i=0;i<jsonData.list.length;i++)  {
+		 			if(i==0) {
+		 				//alert(jsonData.list[i].pId);
+		 			}
+		 			zNodes[i] = jsonData.list[i];
+		 		}
+		 		//alert(jsonData.list);
+				$.fn.zTree.init($("#treeZo"),setting,zNodes); //加载数据
+			}
+		});
+	});
+	
+	function beforeOnClick(){
+		alert('节点单击事件回调函数，点击之前');
+	}
+	function onClick(){
+		alert('定义节点单击事件回调函数');
+	}
+	function OnRightClick(){
+		alert('定义节点右键单击事件回调函数');
+	}
+	function beforeRename(){
+		alert('定义节点重新编辑成功前回调函数，一般用于节点编辑时判断输入的节点名称是否合法');
+	}
+	function onDblClick(){
+		alert('定义节点双击事件回调函数');
+	}
+	function onCheck(){
+		alert('定义节点复选框选中或取消选中事件的回调函数');
+	}
+</SCRIPT>
+</head>
+<body>
+	<div>
+		<ul id="treeZo" class="ztree"></ul>
+	</div>
+
+</body>
+</html>

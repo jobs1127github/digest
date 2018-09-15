@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+ <!-- 后台页面 -->
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- 下面三句话，用于告诉浏览器不要缓存 -->
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="This is my page">
+<title></title>
+<style type="text/css">
+body {
+	background: url(img/banner.png) #2a83cf;
+	background-repeat: no-repeat;
+	width: 100%;
+}
+</style>
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<!-- 引入jquery插件 -->
+<script type="text/javascript" src="javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="javascript/httpService.js"></script>
+
+<script type="text/javascript">
+	//sendRequest,在javascript/httpService.js定义，用JSON的异步请求，参考网页：http://www.jb51.net/article/48921.htm
+	function init() {
+		//发起异步请求,参数：没有参数可以直接填写null，也可填写{},有参数可以通过序列化的方式，也可以直接{"username":username,"password":password}
+		sendRequest(pageContextPath + "/getUserInfo.do", null,
+				function(jsonData) {
+					//alert(jsonData);
+					$("#wel").html(jsonData.message);
+				});
+		writeDateInfo();
+	}
+
+	/**
+	 * js显示年月日 星期
+	**/
+	function writeDateInfo() {
+		var day = "";
+		var month = "";
+		var ampm = "";
+		var ampmhour = "";
+		var myweekday = "";
+		var year = "";
+		mydate = new Date();
+		myweekday = mydate.getDay();
+		//alert(myweekday);
+		mymonth = mydate.getMonth() + 1;
+		myday = mydate.getDate();
+		myyear = mydate.getYear();
+		year = (myyear > 200) ? myyear : 1900 + myyear;
+		if (myweekday == 0) {
+			weekday = " 星期日";
+		} else if (myweekday == 1) {
+			weekday = " 星期一";
+		} else if (myweekday == 2) {
+			weekday = " 星期二";
+		} else if (myweekday == 3) {
+			weekday = " 星期三";
+		} else if (myweekday == 4) {
+			weekday = " 星期四";
+		} else if (myweekday == 5) {
+			weekday = " 星期五";
+		} else if (myweekday == 6) {
+			weekday = " 星期六";
+		}
+		$("#welTime").html(
+				year + "年" + mymonth + "月" + myday + "日&nbsp;&nbsp;" + weekday);
+	}
+</script>
+</head>
+<!-- onload监听 页面被加载后调用init() -->
+<body onload="init()">
+	<div class="con">
+		<div class="logo" style="float:left;display:none">
+			<img src="img/logo.png" width="326" height="50"
+				style="margin-top: -8px;" />
+		</div>
+		<div class="wel" style="font-size:13px;">
+			<div class="wel">
+				<div class="le">
+					<img src="img/adm.png" width="12" height="15"
+						style="margin-right:10px">欢迎您：<span id="wel"></span>，
+						<a href="#">test</a>
+				</div>
+				<div class="le">
+					<span id="welTime"></span>
+				</div>
+				<div class="le"></div>
+				
+				<!-- 直接回到父亲请求，最原始的请求。即使session里还有user也没用了。 -->
+				<a id="systemExit" href="login.html" target="_parent"> 
+				<img src="img/exit.png" width="23" height="23" border="0px" /> 
+				</a>
+				
+			</div>
+		</div>
+		<div style="clear:both"></div>
+	</div>
+</body>
+</html>

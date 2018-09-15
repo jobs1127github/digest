@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>签到列表</title>
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="This is my page">
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script src="../js/global.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+<script type="text/javascript" src="../javascript/validata.js"></script>
+<script type="text/javascript" src="../javascript/loadSelect.js"></script>
+
+
+
+<script type="text/javascript">
+	function openwin2() {
+		$("#qiandao14").val("and t.count >= 14");
+		var params = $("#dataDictionaryForm").serialize();
+		onloadDataDictionaryInfo(1, params);
+	}
+	function openwin3() {
+		var params = $("#dataDictionaryForm").serialize();
+		onloadDataDictionaryInfo(1, params);
+	}
+	//修改
+	function edit_qiandao(_this) {
+		var datakey = $(_this).attr("datakey");
+		$("#open_id").val(datakey);
+		var r = confirm("确认对方已领取奖品后，重置签到次数，Ta的签到次数变为0，你确定要重置Ta的签到次数么？");
+		if (r == true){
+	 		var url = pageContextPath + "/system/qiandao_edit.do";
+	 		var params = $("#dataDictionaryForm").serialize();
+			sendRequest(url,params,function(datas) {
+				if(datas.data == "sucess") {
+					window.location.reload();
+				}
+			});
+	 	} else {
+	 	}
+	}
+
+	function chongZi() {
+		dataDictionaryForm.reset();
+		window.location.href = "dataDictionary_list.html";
+	}
+	
+	function delDataDictionaryInfo(_this) {
+		var datakey = $(_this).attr("datakey");
+		if (confirm("确定删除数据吗？")) {
+			sendRequest(pageContextPath + "/system/delMarkVoInfo.do", {
+				"datakey" : datakey
+			}, function(jsonData) {
+				if (jsonData.data == 1) {
+					alert("操作成功!");
+					queryDataDictionaryInfo(1);
+				} else {
+					alert("操作失败，请联系管理员!");
+				}
+			});
+		}
+	}
+	$(function() {
+		queryDataDictionaryInfo(1);
+	});
+	function queryDataDictionaryInfo(pageNo) {
+		$("#qiandao14").val("");
+		$("#openid").val("");
+		var params = $("#dataDictionaryForm").serialize();
+		onloadDataDictionaryInfo(pageNo, params);
+	}
+	function onloadDataDictionaryInfo(pageNo, params) {
+		var url = pageContextPath + "/system/qiandaolist.do";
+		sendRequest(
+				url,
+				"pageSize=15&pageNo=" + pageNo + "&" + params,
+				function(datas) {
+					var vJson = datas;  
+					$("#table2").html("");
+					var table2th = "";
+					table2th += "\<tr id='headtr'\>";
+					if (vJson.data == null) {
+						$("#table2").html(
+								"\<th style='width:826px;'\>没有与之相关的词条\</th\>");
+
+					} else {
+						table2th += "\<th style='width:20%;' class='td_emplName'\>openId\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>签到次数\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>用户名\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>昵称\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>签到日期\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>签到时间\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>微信省份\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>微信地市\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>备注\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>领奖次数\</th\>";
+						table2th += "\<th style='width:8%;' class='td_emplName'\>重置签到次数\</th\>";
+						table2th += "\</tr\>";
+						var row = "";
+						if (vJson.data.length > 0) {
+							for ( var i = 0; i < vJson.data.length; i++) {
+								if (i % 2 == 0) {
+									row += "<tr>";
+								} else {
+									row += "<tr style='background-color:#f4f8f9'>";
+								}
+								row += "<td >" + vJson.data[i].openid + "</td>";
+								row += "<td >" + vJson.data[i].count + "</td>";
+								row += "<td >" + vJson.data[i].username + "</td>";
+								row += "<td >" + vJson.data[i].nickname + "</td>";
+								row += "<td >" + vJson.data[i].date + "</td>";
+								row += "<td >" + vJson.data[i].time + "</td>";
+								row += "<td >" + vJson.data[i].province + "</td>";
+								row += "<td >" + vJson.data[i].city + "</td>";
+								row += "<td >" + vJson.data[i].publicno + "</td>";
+								row += "<td >" + vJson.data[i].ljcount + "</td>";
+								row += "<td>";
+								row += "<a href='#' style='margin-right:3px;' class='cz' onclick='edit_qiandao(this)' datakey="
+										+ vJson.data[i].openid + ">重置签到次数</a>";
+										row += "</td>";
+								row += "</tr>";
+							}
+						}
+						var footPage = "";
+						footPage += "\<tr align='right'\>";
+						footPage += "\<td class='pages' style='align:right;border-top:1px solid #bdd0db;' colspan='14'\>";
+						footPage += "\<div id='pagediv' class='fy'\>\</div\>";
+						footPage += "\</td\>";
+						footPage += "\</tr\>";
+						$("#table2").html(table2th + row + footPage);
+					}
+					$("#pagediv").children().remove();
+					var pageV = new pageView("#pagediv");
+					pageV.totalCount = vJson.total;
+					pageV.index = pageNo;
+					pageV.onclick = function(pageNo) {
+						onloadDataDictionaryInfo(pageNo, params);
+					};
+					pageV.render();
+				}, true);
+	}
+</script>
+
+</head>
+<body>
+	<form method="post" name="dataDictionaryForm" id="dataDictionaryForm">
+		<input type="hidden" value="" name="qiandao14" id="qiandao14"/>
+		<input type="hidden" value="" name="open_id" id="open_id"/>
+		<div id="hiddenDiv"></div>
+		<div class="container">
+			<div class="detail">
+				<b></b><span>签到管理</span>
+			</div>
+		</div>
+		<div style="width: 100%;">
+			<img src="../img/cur_r.png" width="16" height="16">
+			<a href="javascript:openwin2();" style="color:blue;">查询签到>=14天的用户</a>
+			<input type="text" value="" name="openid" id="openid"/><a href="javascript:openwin3();" style="color:blue;">输入OpenID查询</a>
+		</div>
+		<div>
+			<table id="table2"
+				style="width: 100%; word-break: break-all; word-wrap: break-word;">
+			</table>
+		</div>
+		<div>
+		</div>
+	</form>
+</body>
+</html>

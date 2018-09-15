@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--persistence持久化配置文件,是专属于JPA的配置文件
+	hibernate4 实现jpa2.0规范的集成
+-->
+<persistence version="2.0"
+    xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+	
+	<!--如果Spring容器集成了JPA，这里可以不配置与数据库链接的信息,在spring容器里配置数据源效率会更高。
+		与数据库链接采用的是数据源的方式,
+		采用数据源方法链接数据库可以提高性能,避免应用频繁与数据库建立链接,
+		常用的数据库链接可以存放在数据源的连接池里,以后要访问数据库就不需要再重新建立链接,
+		而是直接从连接池里拿取现成的.
+		
+		单独测试JPA环境，可以在该persistence.xml文件里配置数据库连接信息。
+		-->
+	<persistence-unit name="jpa-jobs1127" transaction-type="RESOURCE_LOCAL">
+	 	<!-- 配置使用什么ORM产品来作为JPA的实现 
+	 		1.实际上配置的是javx.persistance.spi.PersistanceProvider接口的实现类 
+            2.若JPA项目中只有一个JPA的实现产品，也可以不配置该节点 -->
+        <provider>org.hibernate.ejb.HibernatePersistence</provider> 
+     
+      <!-- 连接数据库的配置，已经在jdbc.properties里配置了，在applicationContext.xml里启用数据源的方式连接数据库，这里就能再重复配置了，否则会找这里的配置，儿这里的配置的数据库连接是不会开启事务的 
+       -->
+       <properties> 
+      	 <!-- Oracle数据库 
+         <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
+         <property name="hibernate.connection.driver_class" value="oracle.jdbc.driver.OracleDriver"/>
+         <property name="hibernate.connection.username" value="APPS"/>
+         <property name="hibernate.connection.password" value="FOo7c41k"/>
+         <property name="hibernate.connection.url" value="jdbc:oracle:thin:@192.16.8.246:1528:TEST"/>
+         -->
+         
+         <!-- mysql数据库 如果要测试jpa，这里需要打开，实际应用时，配置数据源，这里注释掉 
+         <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+          <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
+         <property name="hibernate.connection.username" value="root"/>
+         <property name="hibernate.connection.password" value="root"/>
+         <property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/digest_wx?useUnicode=true&amp;characterEncoding=utf-8"/>
+         <property name="hibernate.hbm2ddl.auto" value="update" />
+    	 <property name="hibernate.show_sql" value="true" />
+    	 -->
+      </properties>
+	</persistence-unit>
+</persistence>

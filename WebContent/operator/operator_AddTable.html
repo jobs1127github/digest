@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>操作员资料新增</title>
+<!-- 不让浏览器缓存 -->
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="cache-control" content="no-cache">
+<meta http-equiv="expires" content="0">
+
+<meta http-equiv="description" content="This is my page">
+<link href="../css/table.css" rel="stylesheet" type="text/css" />
+<link href="../css/global.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="../javascript/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" src="../javascript/jquery.alerts.js"></script>
+<script type="text/javascript" src="../javascript/calendar.js"></script>
+<script type="text/javascript" src="../javascript/httpService.js"></script>
+<script type="text/javascript" src="../javascript/page.js"></script>
+<script type="text/javascript" src="../javascript/validata.js"></script>
+
+<!-- 日期组件 -->
+<script type="text/javascript" src="../javascript/jquery.datepick.js"></script>
+<script type="text/javascript" src="../javascript/jquery.datepick-zh-CN.js"></script>
+<link type="text/css" href="../css/smoothness.datepick.css" rel="stylesheet" />
+
+<!-- 删除已经上传的单个文件的公共方法 -->
+<script type="text/javascript" src="../javascript/public.js"></script>
+<script type="text/javascript" src="../javascript/loadSelects.js"></script>
+<script type="text/javascript" src="../javascript/toPingYin.js"></script>
+<script type="text/javascript" src="../javascript/window.js"></script>
+<base target="_self">
+</head>
+<script>
+	$(function() {
+		var dateConfig = {
+			changeMonth : true,
+			changeYear : true,
+			showWeek : true,
+			showButtonPanal : true,
+			closeText : "关闭",
+			yearRange : '1900:2099',
+			dateFormat : 'yy-mm-dd',
+			showAnim : "slideDown",
+			buttonImage : '../images/calen_pic.gif',
+			showOn : "both",
+			buttonImageOnly : true,
+			buttonText : '选择日期',
+			maxDate : '%y-%M-%d'
+		};
+
+		$('#user_birthday').datepick(dateConfig);
+
+		sendRequest(pageContextPath + "/system/loadinitDatas.do", {"param" : "sex"}, 
+		function(jsonData) {
+			var data1 = jsonData.data;
+			$("#user_sex").empty();
+			for ( var i = 0; i < data1.length; i++) {
+				$("#user_sex").append(
+						"<option value='"+data1[i].dataItem+"'>"
+								+ data1[i].dataValue + "</option>");
+			}
+		}, false);
+
+		sendRequest(pageContextPath + "/system/loadinitDatas.do", {
+			"param" : "enable"
+		}, function(jsonData) {
+			var data1 = jsonData.data;
+			$("#status").empty();
+			for ( var i = data1.length-1; i >= 0; i--) {
+				$("#status").append(
+						"<option value='"+data1[i].dataItem+"'>"
+								+ data1[i].dataValue + "</option>");
+			}
+		}, false);
+
+		sendRequest(pageContextPath + "/role/loadRolesinitDatas.do", {},
+				function(jsonData) {
+					var data1 = jsonData.data;
+					$("#user_role").empty();
+					for ( var i = 0; i < data1.length; i++) {
+						$("#user_role").append(
+								"<option value='"+data1[i].role_id+"'>"
+										+ data1[i].role_name + "</option>");
+					}
+				}, false);
+
+	});
+
+	function closeWin() {
+		window.location.href = "emplInfo_list.html";
+	}
+
+	function addEmplInfo() {
+		if ($("#user_name").val().trim() == ""
+				|| $("#user_name").val().trim().length > 30) {
+			alert("名称为空或者长度超过30!");
+			$("#user_name").focus();
+			return;
+		}
+
+		if ($("#user_pass").val().trim() == ""
+				|| $("#user_pass").val().trim().length > 30) {
+			alert("密码为空或者长度超过30!");
+			$("#user_pass").focus();
+			return;
+		}
+
+		if ($("#user_tentinet_mail").val().trim() == ""
+				|| $("#user_tentinet_mail").val().trim().length > 30) {
+			alert("公司邮箱为空或者长度超过30!");
+			$("#user_tentinet_mail").focus();
+			return;
+		}
+		if ($("#user_birthday").val().trim() == ""
+				|| $("#user_birthday").val().trim().length > 30) {
+			alert("出生日期为空或者长度超过30!");
+			$("#user_birthday").focus();
+			return;
+		}
+		if ($("#user_idcard").val().trim() == "") {
+			alert("请输入身份证号");
+			$("#user_idcard").focus();
+			return;
+		}
+		if ($("#user_idcard").val().trim().length != 15
+				&& $("#user_idcard").val().trim().length != 18) {
+			alert("身份证号长度应为15位或18位！");
+			return false;
+		}
+
+		if (checkDate($("#user_birthday").val().trim()) == false) {
+			alert("您输入的出生日期格式不正确或真实日期不存在！");
+			$("#tbBirthdate").focus();
+			return;
+		}
+
+		var tentinetEmail = $("#user_tentinet_mail").val().trim();
+		if (checkTBMail(tentinetEmail) == false) {
+			//alert(checkTBMail(tbTobaoEmail));
+			alert("公司邮箱只能包括数字、字母、下划线！");
+			$("#user_tentinet_mail").focus();
+			return;
+		}
+
+		var params = $("#emplInfoFrom").serialize();
+		sendRequest(pageContextPath + "/user/saveEmpltInfo.do", params,
+				function(jsonData) {
+					if (jsonData.data == 1) {
+						alert("新增成功");
+						window.opener.location.reload();
+						window.close();
+					} else if (jsonData.data == 3) {
+						alert("操作员名称已存在！");
+					} else {
+						alert("新增失败!请联系管理员");
+					}
+				}, false);
+
+	}
+
+	//获取地址栏?后的参数
+	function getQueryString(name) {
+		var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+		var r = window.location.search.substr(1).match(reg);
+		if (r != null)
+			return unescape(r[2]);
+		return null;
+	}
+	//点击导入姓名全拼
+	function getNamePingyin() {
+		var pingYin = codefans_net_CC2PY($("#user_name").val());
+		$("#user_tentinet_mail").val(pingYin.toLowerCase());
+	}
+</script>
+
+<body style='overflow: scroll; overflow-x: hidden'>
+	<div style="margin-bottom: 10px;">
+		<img src="../images/t.png" /> <span style="font-size: 18px;">操作员资料</span>
+	</div>
+	<form id="emplInfoFrom" name="emplInfoFrom" method="post">
+		<!-- <input type="hidden" name="temSave" id="temSave" /> -->
+		<input type="hidden" name="tbResumeId" id="tbResumeId" />
+
+		<div style="position: relative;">
+				<fieldset>
+					<legend>
+						<strong>操作员基本资料</strong>
+					</legend>
+				<table id="AddTable">
+					<tr>
+						<td>操作员名称<a style="color: red;">*</a>
+						</td>
+						<td><input type="text" name="user_name" id="user_name" />
+						</td>
+
+						<td>身份证<a style="color: red;">*</a>
+						</td>
+						<td><input type="text" id="user_idcard" name="user_idcard" />
+						</td>
+					</tr>
+					<tr>
+						<td>性别<a style="color: red;">*</a>
+						</td>
+						<td><select id="user_sex" name="user_sex"
+							style="width: 150px">
+						</select>
+						</td>
+						<td>是否有效<a style="color: red;">*</a>
+						</td>
+						<td><select id="status" name="status" style="width: 150px"></select>
+						</td>
+					</tr>
+					<tr>
+						<td>公司邮箱<a style="color: red;">*</a>
+						</td>
+						<td><input type="text" name="user_tentinet_mail"
+							id="user_tentinet_mail" />@szhuati.com</td>
+
+						<td>登 录密码<a style="color: red;">*</a>
+						</td>
+						<td><input type="text" name="user_pass" id="user_pass" />
+						</td>
+
+						<td>个人邮箱<a style="color: red;">*</a>
+						</td>
+						<td><input type="text" name="user_mail" id="user_mail" />
+						</td>
+					</tr>
+					<tr>
+						<td>出生日期<a style="color: red;">*</a>
+						</td>
+						<td><input type="text" id="user_birthday"
+							name="user_birthday" />
+						</td>
+						<td>角色<a style="color: red;">*</a>
+						</td>
+						<td><select id="user_role" name="user_role"
+							style="width: 150px">
+						</select>
+						</td>
+					</tr>
+				</table>
+			</fieldset>
+			<br /> <br />
+			<div style="float: left; text-align: center; margin-left: 302.5px;">
+				<a href="#" onclick="addEmplInfo()"><div class="btns1">新增</div>
+				</a> <a href="#" onclick="window.close()"><div class="btns1">关闭</div>
+				</a>
+			</div>
+			</div>
+	</form>
+</body>
+</html>

@@ -1,0 +1,24 @@
+创建compass,
+根据compass打开或拿到session,
+session开事务,session调用compass的API完成增删改查操作.
+
+Compass compass = new CompassAnnotationConfiguration().configure().buildCompass();默认读取的配置文件是compass.cfg.xml
+Session session = compass.openSession();//compass.getCurrentSession();
+session.beginTransaction();
+session.create(entity);//增删查操作....目标是document索引文件
+session.commit();
+session.close();
+compass.close();
+
+lucene API（Compass API）----Object Search Engine Mapping-----OSEM
+ 就类似于JDBC API（hibernate API）----ORM
+ 
+ 要实现全文检索：
+1.配置好搜索时的分词器,如paoding_analyzer,庖丁解牛分词器.采用的字典分词器,很适合中文的全文检索.
+2.映射搜索实体到索引文件中(
+@Searchable标识一个类为搜索实体,
+@SearchableId标识一个字段为搜索实体的标识属性,
+@SearchableProperty注解标识某个实体属性为具有搜索能力的属性)
+3.通过compass建立索引到索引文件document(客户端的html document文档).
+建立索引就是将一些要被查询的实体保存到索引文件中document
+4.查询索引。

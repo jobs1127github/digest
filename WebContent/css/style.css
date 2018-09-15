@@ -1,0 +1,402 @@
+@charset "utf-8";
+html,body{width:100%;height:100%;}
+body,ul,ol,li,p,h1,h2,h3,h4,h5,h6,form,fieldset,table,th,td,img,div {margin:0px;padding:0px;border:0px;}
+body {background:#fff;color:#000;font-size:12px;font-family:"微软雅黑";}
+ul,ol {list-style-type:none;}
+input,textarea,select {vertical-align:middle;font-size:10px;padding:2px; font-family:"微软雅黑";}
+a {text-decoration:none;}
+.clear {clear:both;display:block;font-size:0px;line-height:0px;margin:0px;padding:0px;border:0px;}
+
+.title {
+	display:block;
+	width:92px;
+	height:37px;
+	background:url(../images/til-2.gif) no-repeat;
+	font-size:18px;
+	color:#fff;
+	line-height:37px;
+	text-align:center;
+}
+
+.title-2 {
+	width:125px;
+	background:url(../images/til.gif) no-repeat;
+}
+
+.form-table th, .form-table td {
+	padding:12px;
+}
+
+.form-table th {
+	font-size:12px;
+	font-weight:normal;
+}
+
+.form-table td {
+	font-size:16px;
+}
+
+.textfield {
+	border:1px solid #c09987;
+	width:330px;
+	height:30px;
+	font-size:10px;
+	line-height:30px;
+}
+
+.olink {
+	font-size:16px;
+	color:#e15718;
+	text-decoration:underline;
+}
+
+.page-bar {
+	text-align:right;
+	padding:10px;
+	color:#999999;
+}
+
+.page-bar a {
+	font-size:16px;
+	color:#e15718;
+	text-decoration:underline;
+}
+
+.grid-table {
+	background:#c09987;
+}
+
+.grid-table th, .grid-table td {
+	padding:8px;
+}
+
+.grid-table th {
+	background:#e15718;
+	font-size:16px;
+	font-weight:normal;
+	color:#fff;
+}
+
+.grid-table td {
+	background:#fff;
+	font-size:16px;
+}
+
+.ctrlcell {
+	text-align:center;
+}
+
+.ctrlcell a {
+	margin:0px 5px;
+}
+
+.button {
+	background:url(../images/btn.gif) no-repeat;
+	width:88px;
+	height:32px;
+	border:0px;
+	font-size:16px;
+	text-align:center;
+	color:#fff;
+	cursor:pointer;
+}
+
+.button-bar {
+	padding:20px;
+	text-align:center;
+}
+
+.button-bar input {
+	margin:0px 10px;
+}
+
+.shadow {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background:#000;
+	filter:alpha(opacity=10);
+	-moz-opacity:0.1;
+	-khtml-opacity:0.1;
+	opacity:0.1;
+	display:none;
+}
+
+.window {
+	position:absolute;
+	width:500px;
+	left:50%;
+	top:50px;
+	margin-left:-251px;
+	border:1px solid #c09987;
+	background:#f2f2f2;
+	display:none;
+}
+
+.shadow1 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background:#000;
+	filter:alpha(opacity=10);
+	-moz-opacity:0.1;
+	-khtml-opacity:0.1;
+	opacity:0.1;
+	display:none;
+}
+
+.window1 {
+	position:absolute;
+	width:400px;
+	left:50%;
+	top:50px;
+	margin-left:-251px;
+	border:1px solid #c09987;
+	background:#f2f2f2;
+	display:none;
+}
+
+.shadow2 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background:#000;
+	filter:alpha(opacity=10);
+	-moz-opacity:0.1;
+	-khtml-opacity:0.1;
+	opacity:0.1;
+	display:none;
+}
+
+.window2 {
+	position:absolute;
+	width:500px;
+	left:50%;
+	top:50px;
+	margin-left:-251px;
+	border:1px solid #c09987;
+	background:#f2f2f2;
+	display:none;
+}
+
+.window-title {
+	background:url(../images/win-bg.gif) repeat-x;
+	height:43px;
+	line-height:43px;
+	font-size:18px;
+	color:#fff;
+	text-align:center;
+}
+
+.queryform td {
+	padding:15px;
+	font-size:16px;
+}
+
+
+@charset "utf-8";
+html,body{width:100%;height:100%;}
+body,ul,ol,li,p,h1,h2,h3,h4,h5,h6,form,fieldset,table,th,td,img,div {margin:0px;padding:0px;border:0px;}
+body {background:#fff;color:#000;font-size:12px;font-family:"微软雅黑";}
+ul,ol {list-style-type:none;}
+input,textarea,select {vertical-align:middle;font-size:10px;padding:2px; font-family:"微软雅黑";}
+a {text-decoration:none;}
+.clear {clear:both;display:block;font-size:0px;line-height:0px;margin:0px;padding:0px;border:0px;}
+
+.title {
+	display:block;
+	width:92px;
+	height:37px;
+	background:url(../images/til-2.gif) no-repeat;
+	font-size:18px;
+	color:#fff;
+	line-height:37px;
+	text-align:center;
+}
+
+.title-2 {
+	width:125px;
+	background:url(../images/til.gif) no-repeat;
+}
+
+.form-table th, .form-table td {
+	padding:12px;
+}
+
+.form-table th {
+	font-size:12px;
+	font-weight:normal;
+}
+
+.form-table td {
+	font-size:16px;
+}
+
+.textfield {
+	border:1px solid #c09987;
+	width:330px;
+	height:30px;
+	font-size:10px;
+	line-height:30px;
+}
+
+.olink {
+	font-size:16px;
+	color:#e15718;
+	text-decoration:underline;
+}
+
+.page-bar {
+	text-align:right;
+	padding:10px;
+	color:#999999;
+}
+
+.page-bar a {
+	font-size:16px;
+	color:#e15718;
+	text-decoration:underline;
+}
+
+.grid-table {
+	background:#c09987;
+}
+
+.grid-table th, .grid-table td {
+	padding:8px;
+}
+
+.grid-table th {
+	background:#e15718;
+	font-size:16px;
+	font-weight:normal;
+	color:#fff;
+}
+
+.grid-table td {
+	background:#fff;
+	font-size:16px;
+}
+
+.ctrlcell {
+	text-align:center;
+}
+
+.ctrlcell a {
+	margin:0px 5px;
+}
+
+.button {
+	background:url(../images/btn.gif) no-repeat;
+	width:88px;
+	height:32px;
+	border:0px;
+	font-size:16px;
+	text-align:center;
+	color:#fff;
+	cursor:pointer;
+}
+
+.button-bar {
+	padding:20px;
+	text-align:center;
+}
+
+.button-bar input {
+	margin:0px 10px;
+}
+
+.shadow {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background:#000;
+	filter:alpha(opacity=10);
+	-moz-opacity:0.1;
+	-khtml-opacity:0.1;
+	opacity:0.1;
+	display:none;
+}
+
+.window {
+	position:absolute;
+	width:500px;
+	left:50%;
+	top:50px;
+	margin-left:-251px;
+	border:1px solid #c09987;
+	background:#f2f2f2;
+	display:none;
+}
+
+.shadow1 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background:#000;
+	filter:alpha(opacity=10);
+	-moz-opacity:0.1;
+	-khtml-opacity:0.1;
+	opacity:0.1;
+	display:none;
+}
+
+.window1 {
+	position:absolute;
+	width:400px;
+	left:50%;
+	top:50px;
+	margin-left:-251px;
+	border:1px solid #c09987;
+	background:#f2f2f2;
+	display:none;
+}
+
+.shadow2 {
+	position:absolute;
+	left:0px;
+	top:0px;
+	width:100%;
+	height:100%;
+	background:#000;
+	filter:alpha(opacity=10);
+	-moz-opacity:0.1;
+	-khtml-opacity:0.1;
+	opacity:0.1;
+	display:none;
+}
+
+.window2 {
+	position:absolute;
+	width:500px;
+	left:50%;
+	top:50px;
+	margin-left:-251px;
+	border:1px solid #c09987;
+	background:#f2f2f2;
+	display:none;
+}
+
+.window-title {
+	background:url(../images/win-bg.gif) repeat-x;
+	height:43px;
+	line-height:43px;
+	font-size:18px;
+	color:#fff;
+	text-align:center;
+}
+
+.queryform td {
+	padding:15px;
+	font-size:16px;
+}

@@ -1,0 +1,216 @@
+/* CSS Document */
+
+.main {
+	width:100%;
+	height:100%;
+}
+
+.main .top {
+	width:100%;
+	height:82px;
+	/*background:url(../images/top_bottom.gif) 0px 75px repeat-x;*/
+}
+
+.top_left, .top_right {
+	height:79px;
+}
+
+.top_left {
+    margin-right:-180px;
+    width:100%;
+	float:left;
+}
+
+.top_right {
+    width:180px;
+	float:right;
+}
+
+.logobar {
+	height:53px;
+}
+
+.navbar {
+	height:30px;
+}
+#navbarList, #childsNav {}
+
+.navbar li, .navbar a {
+	display:block;
+	width:90px;
+	height:30px;
+}
+
+.navbar li {
+	/*position:absolute;*/
+	float:left;
+}
+
+.navbar a {
+	text-decoration:none;
+	background:url(../images/nav_item.gif) no-repeat;
+	text-align:center;
+	line-height:30px;
+	color:#4f5b75;
+	font-size:14px;
+	font-weight:bold;
+}
+
+.navbar a:hover {
+	color:#4FABCE;
+}
+
+.navbar .hover a {
+	background:url(../images/nav_item_hover.gif) no-repeat;
+	color:#fff;
+}
+
+.frametop table {
+	width:100%;
+	height:24px;
+}
+
+.frametop table td {
+	vertical-align:top;
+}
+
+.frame_top_left {
+	width:12px;
+	/*background:url(../images/frame/top_left.gif) no-repeat;*/
+}
+
+.frame_top {
+	background:url(../images/frame/top.gif) repeat-x;
+}
+
+#childsNav {
+	padding-top:7px;
+}
+
+.frame_top_right {
+	width:11px;
+	/*background:url(../images/frame/top_right.gif) no-repeat;*/
+}
+
+.frame_top ul li, .frame_top ul li a {
+	display:block;
+}
+
+.frame_top ul li {
+	float:left;
+	margin-right:10px;
+	height:34px;
+	line-height:34px;
+	background:url(../images/frame/subnav_bg.gif) no-repeat
+}
+
+.frame_top ul li a {
+	padding:0 5px;
+	color:#4fabce;
+}
+
+.frame_top ul li a.curSub {
+	background:#d0e3eb;
+}
+
+.frame_top ul li a:hover {
+	background:#d0e3eb;
+}
+
+.body table {
+	width:100%;
+}
+
+.frame_body_left {
+	width:12px;
+	background:url(../images/frame/left.gif) repeat-y;
+}
+
+.frame_body_right {
+	width:11px;
+	background:url(../images/frame/right.gif) repeat-y;
+}
+
+.bottom table {
+	width:100%;
+}
+
+.frame_bottom_left {
+	width:12px;
+	background:url(../images/frame/bottom_left.gif) repeat-y;
+}
+.frame_bottom {
+	background:url(../images/frame/bottom.gif) repeat-x;
+}
+
+.frame_bottom_right {
+	width:11px;
+	background:url(../images/frame/bottom_right.gif) repeat-y;
+}
+
+.subpage_iframe {
+	width:100%;
+	height:500px;
+	border:none;
+}
+
+.copyright {
+	text-align:center;
+	padding:10px;
+	color:#4f6fa8;
+}
+
+.top_right_nav {
+	padding:2px 5px;
+	color:#fff;
+	background:#849aca;
+}
+
+.top_right_nav a {
+	color:#fff;
+	text-decoration:none;
+}
+
+.top_right_nav a:hover {
+	text-decoration:underline;
+}
+
+.top_right_out {
+	float:right;
+	display:block;
+	width:77px;
+	height:26px;
+	line-height:26px;
+	padding-left:25px;
+	border:1px solid #95a7bf;
+	border-bottom:none;
+	color:#ababab;
+	background:url(../images/quit.gif) 5px center no-repeat;
+	margin:3px 3px 0px 0px;
+}
+
+.top_right_out a {
+	color:#ababab;
+	text-decoration:none;
+}
+
+.top_right_out a:hover {
+	text-decoration:underline;
+}
+
+.top_visibility {
+	padding-top:5px;
+	margin-right:5px;
+}
+
+.top_visibility a {
+	display:block;
+	background:url(../images/up.gif) no-repeat;
+	width:12px;
+	height:12px;
+	float:right;
+}
+
+.top_visibility .down {
+	background:url(../images/down.gif) no-repeat;
+}

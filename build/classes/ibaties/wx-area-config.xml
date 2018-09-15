@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="Area">
+	<typeAlias alias="areaVo" type="com.tentinet.app.bean.AreaVo" />
+	
+	<select id="queryArea" parameterClass="java.util.Map" resultClass="areaVo">
+		  select 
+		        id,
+		        city
+		  from 
+		       t_area
+		  where
+				parents_id IN
+		       (
+		          select
+		                id
+		          from
+		               t_area  
+		          where
+		                city = #city#
+		        )
+	</select>
+	
+	<select id="queryAreaRoot" parameterClass="java.util.Map" resultClass="areaVo">
+		  select 
+		        id,
+		        city
+		  from 
+		       t_area
+		  where
+				parents_id IN
+		       (
+		           #parents_id#
+		        )
+	</select>
+</sqlMap> 

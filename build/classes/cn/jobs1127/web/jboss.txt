@@ -1,0 +1,10 @@
+1、JBoss介绍
+JBoss完全实现了J2EE的服务栈：
+EJB (Enterprise JavaBeans)
+JMS (Java Message Service)
+JTS/JTA (Java Transaction Service / Java Transaction API)
+Servlet and JSP (JavaServer Pages)
+JNDI (Java Naming and Directory Interface)
+它还提供一些高级特性，比如集群、JMX、Web Service。它还整合了IIOP（Internet Inter-ORB Protocol）。
+因为JBoss代码遵循LGPL许可，你可以在任何商业应用中免费使用它，而不用支付费用。
+JBoss是纯Java的Web应用服务器，为了保证JBoss服务器的正常运行，在安装JBoss之前首先要确保系统已经安装了JDK。

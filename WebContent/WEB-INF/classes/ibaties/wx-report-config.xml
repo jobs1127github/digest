@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap PUBLIC "-//iBATIS.com//DTD SQL Map 2.0//EN" 
+"http://www.ibatis.com/dtd/sql-map-2.dtd">
+
+<sqlMap namespace="report">
+		<typeAlias alias="DigestGoldDto" type="com.tentinet.app.bean.dto.DigestGoldDto" />
+	<!-- 查询列表 -->
+	<select id="queryGoldSendInfos" parameterClass="java.util.Map"
+		resultClass="DigestGoldDto">
+		SELECT 
+			a.tid,
+			a.openid,
+			a.gold AS gold_count,
+			a.send_time,
+			a.send_type,
+			a.created_time,
+			(SELECT t.username FROM wx_openid_wxno t WHERE t.openid=a.openid) AS username
+			FROM wx_digest_gold a WHERE 1=1
+			<isNotEmpty property="send_type" prepend="and">
+			a.send_type =#send_type#
+		</isNotEmpty>	
+	</select>
+	<!-- 查询的数量 -->
+	<select id="queryGoldSendCount" parameterClass="java.util.Map"
+		resultClass="java.lang.Integer">
+		select count(1)
+		from wx_digest_gold a where 1=1
+		<isNotEmpty property="send_type" prepend="and">
+			a.send_type =#send_type#
+		</isNotEmpty>		
+	</select>
+	
+</sqlMap> 
