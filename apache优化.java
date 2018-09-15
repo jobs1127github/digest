@@ -1,5 +1,5 @@
 public class apache{
-	//haha
+	//hahad
 	public void windows下定时重启apache和MySQL(){
 		采用at命令添加计划任务
 		1、在c:盘根目录新建一个apacheautostart.bat文件，然后右键编辑，将文件内容设为如下后保存：
